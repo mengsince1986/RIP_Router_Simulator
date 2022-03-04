@@ -14,8 +14,8 @@
 - [x] Set up team
 
 * Week 2
-- [ ] 1st Meeting
-- [ ] Assignment Plan/Overview
+- [x] 1st Meeting
+- [x] Assignment Plan/Overview
 
 * Week 3
 - [ ] Labs 5.1-5.3
