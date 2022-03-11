@@ -18,9 +18,20 @@
 - [x] Assignment Plan/Overview
 
 * Week 3
-- [ ] Labs 5.1-5.3
+- [x] Labs 5.1 Lab Setup
+- [x] Labs 5.2 Discovering Network Topology and Initial Setup
+- [ ] Labs 5.3 Rip Routing
 
 * Week 4
+- [ ] Booklet_Routing
+    - [ ] B.1 Elementary Unix/Linux Networking Tools
+    - [ ] B.2 the quagga routing Software
+- [ ] Quagga users manual
+    - [ ] 3. Basic Commands
+    - [ ] 4. Zebra
+    - [ ] 5. RIP
+- [ ] Labs 5.3 Rip Routing
+
 * Week 5
 * Week 6
 * Week 7
