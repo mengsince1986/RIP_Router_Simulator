@@ -20,19 +20,24 @@
 * Week 3
 - [x] Labs 5.1 Lab Setup
 - [x] Labs 5.2 Discovering Network Topology and Initial Setup
-- [ ] Labs 5.3 Rip Routing
 
 * Week 4
-- [ ] Booklet_Routing
-    - [ ] B.1 Elementary Unix/Linux Networking Tools
-    - [ ] B.2 the quagga routing Software
-- [ ] Quagga users manual
-    - [ ] 3. Basic Commands
-    - [ ] 4. Zebra
-    - [ ] 5. RIP
-- [ ] Labs 5.3 Rip Routing
+- [x] Booklet_Routing
+    - [x] B.1 Elementary Unix/Linux Networking Tools
+    - [x] B.2 the quagga routing Software
+- [x] Quagga users manual
+    - [x] 3. Basic Commands
+    - [x] 4. Zebra
+    - [x] 5. RIP
+- [x] Labs 5.3 Rip Routing
 
 * Week 5
+- [ ] Construct program structure
+- [ ] Reading rip-assignment
+  - [ ] 4. Problem Description
+    - [ ] 4.1 The configuration file
+    - [ ] 4.2 Exchanging Routing Packets and Route Computations
+  [ ] Reading rfc2453-ripv2
 * Week 6
 * Week 7
 * Week 8
