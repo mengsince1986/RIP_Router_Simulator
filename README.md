@@ -32,12 +32,9 @@
 - [x] Labs 5.3 Rip Routing
 
 * Week 5
-- [ ] Construct program structure
-- [ ] Reading rip-assignment
-  - [ ] 4. Problem Description
-    - [ ] 4.1 The configuration file
-    - [ ] 4.2 Exchanging Routing Packets and Route Computations
-  [ ] Reading rfc2453-ripv2
+- [ ] Reading rip-assignment file
+- [ ] Reading rfc2453-ripv2
+- [ ] Construct a finite automata (FA) for the protocol specifications
 * Week 6
 * Week 7
 * Week 8
