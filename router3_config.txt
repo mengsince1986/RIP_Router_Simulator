@@ -1,0 +1,5 @@
+orouter-id 3
+input-ports 6030
+output-ports 6021-2-2
+period 3
+timeout 18 

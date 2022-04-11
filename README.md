@@ -32,7 +32,7 @@
 - [x] Labs 5.3 Rip Routing
 
 * Week 5
-- [ ] Reading rip-assignment file
+- [x] Reading rip-assignment file
 - [ ] Reading rfc2453-ripv2
 - [ ] Construct a finite automata (FA) for the protocol specifications
 * Week 6
