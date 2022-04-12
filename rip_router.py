@@ -49,12 +49,18 @@ class Router:
 
     def init_routing_table(self):
         print("init_routing_table starts...")
+        self.routing_table = {self.router_id: ["Next Hop", 0, "timer", "Notes"]}
+        return True
 
     def update_routing_table(self):
         print("update_routing_table starts...")
+        return "====================Update Router {}====================".format(self.get_router_id())
 
     def get_routing_table(self):
         return self.routing_table
+
+    def print_routing_table(self):
+        print(self.get_routing_table())
 
     def __str__(self):
         return ("Router: {0}\n"

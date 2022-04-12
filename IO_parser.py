@@ -4,6 +4,30 @@ Authors: MENG ZHANG (71682325), ZHENG CHAO
 File: IO_parser.py
 """
 
+def router_config(file_name):
+    """
+    Parameter:
+    file_name: string
+    file format:
+    i.e.
+    ------------------------------
+    router-id 2
+    input-ports 6020, 6021
+    output-ports 6010-1-1, 6030-2-3
+    period 3
+    timeout 18
+    ------------------------------
+    
+    Return: config_data
+    a dictionary with 4 keys of router_id, input_ports, output_ports,
+    timers
+    i.e. {'router_id': 2, 'input_ports': [6020, 6021], 'output_ports_metric_id': [[6010, 1, 1], [6030, 2, 3]], 'period': 3, 'timeout': 18}
+    """
+    raw_config = read_config(file_name)
+    config_data = parse_config(raw_config)
+    return config_data
+
+
 def read_config(file_name):
     """
     Parameter:
@@ -24,8 +48,8 @@ def read_config(file_name):
     """
     try:
         with open(file_name) as config_file:
-            config_data = config_file.read().splitlines()
-            return config_data
+            raw_config = config_file.read().splitlines()
+            return raw_config
     except FileNotFoundError:
         print("Error: the config file name is invalid")
 
@@ -40,7 +64,7 @@ def parse_config(raw_config):
     Return: config_data
     a dictionary with 4 keys of router_id, input_ports, output_ports,
     timers
-    i.e. {'router_id': 2, 'input_ports': [6020, 6021], 'output_ports': [[6010, 1, 1], [6030, 2, 3]], 'period': 3, 'timeout': 18}
+    i.e. {'router_id': 2, 'input_ports': [6020, 6021], 'output_ports_metric_id': [[6010, 1, 1], [6030, 2, 3]], 'period': 3, 'timeout': 18}
     """
     try:
         # get router id
@@ -275,8 +299,16 @@ if __name__ == '__main__':
     assert config_data['output_ports_metric_id'] == [[6010, 1, 1], [6030, 2, 3]]
     assert config_data['period'] == 3
     assert config_data['timeout'] == 18
-
     print("parse_config passed the test")
+    print()
+
+    config_data = router_config("router2_config.txt")
+    assert config_data['router_id'] == 2
+    assert config_data['input_ports'] == [6020, 6021]
+    assert config_data['output_ports_metric_id'] == [[6010, 1, 1], [6030, 2, 3]]
+    assert config_data['period'] == 3
+    assert config_data['timeout'] == 18
+    print("config_data passed the test")
     print()
     
     print("IO_parser passed all tests")

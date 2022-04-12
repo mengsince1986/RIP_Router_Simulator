@@ -33,10 +33,24 @@
 
 * Week 5
 - [x] Reading rip-assignment file
-- [ ] Reading rfc2453-ripv2
-- [ ] Construct a finite automata (FA) for the protocol specifications
-* Week 6
-* Week 7
-* Week 8
+- [x] Reading rfc2453-ripv2
+- [x] Construct a finite automata (FA) for the protocol specifications
+* Week 6/7/8
+- [x] Create basic structure of module file
+- [ ] Init router and socket:
+        - [x] Implement IO_parser.py
+        - [ ] Implement IO_format.py
+        - [ ] Implement rip_main.py sys.argv part
+        - [ ] Implement rip_init.py
+            - [ ] init Router
+            - [ ] init Sockets
+        - [ ] Implement rip_router.py
+            - [ ] __init__ part
+            - [ ] timer
+            - [ ] pseudo update routing table implementation
 * Week 9
+- [ ] rip_router.py
+    - [ ] rip protocol
+- [ ] Finished rip_main.py
 * Week 10
+- [ ] Test
