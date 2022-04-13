@@ -39,13 +39,13 @@
 - [x] Create basic structure of module file
 - [ ] Init router and socket:
         - [x] Implement IO_parser.py
-        - [ ] Implement IO_format.py
-        - [ ] Implement rip_main.py sys.argv part
+        - [x] Implement IO_format.py
+        - [x] Implement rip_main.py sys.argv part
         - [ ] Implement rip_init.py
-            - [ ] init Router
+            - [x] init Router
             - [ ] init Sockets
         - [ ] Implement rip_router.py
-            - [ ] __init__ part
+            - [x] __init__ part
             - [ ] timer
             - [ ] pseudo update routing table implementation
 * Week 9

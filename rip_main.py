@@ -33,6 +33,7 @@ if __name__ == "__main__":
 
     # Initialise router
     ROUTER = rip_router_init(config_file_name)
+    
     print(ROUTER)
     print()
     print(ROUTER.update_routing_table())

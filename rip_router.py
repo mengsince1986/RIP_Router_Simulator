@@ -18,6 +18,9 @@ class Router:
         self.init_routing_table()
 
     def get_router_id(self):
+        """
+        router_id getter
+        """
         return self.router_id
 
     def set_router_id(self, new_id):
@@ -32,7 +35,7 @@ class Router:
     def get_output_ports(self):
         return self.output_ports
 
-    def set_input_ports(self, new_outputs):
+    def set_output_ports(self, new_outputs):
         self.output_ports = new_outputs
 
     def get_period(self):
