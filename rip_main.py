@@ -9,7 +9,8 @@ File: rip_main.py
 ###############################################################################
 
 import sys
-from rip_init import rip_router_init, rip_sockets_init
+import time
+from rip_init import rip_router_init
 
 ###############################################################################
 #                               Global Variables                              #
@@ -21,7 +22,7 @@ from rip_init import rip_router_init, rip_sockets_init
 ###############################################################################
 
 if __name__ == "__main__":
-    print("rip_main starts...")
+    print("Starts RIP Daemon...")
     # get config file name
     try:
         if len(sys.argv) != 2:
@@ -33,8 +34,10 @@ if __name__ == "__main__":
 
     # Initialise router with interface (sockets binding)
     ROUTER = rip_router_init(config_file_name)
-    
-    print(ROUTER)
-    print()
-    print(ROUTER.update_routing_table())
-    ROUTER.print_routing_table()
+
+    while True:
+        ROUTER.advertise_routes()
+        messages = ROUTER.receive_routes()
+        for m in messages:
+            print(m)
+        time.sleep(5)

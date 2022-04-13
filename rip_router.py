@@ -18,8 +18,14 @@ class Router:
     Create a new router object
     """
     def __init__(self, router_id, inputs, outputs, period, timeout):
+        """
+        the __* attributes are private attributes which can only be
+        accessed by getter outside of class.
+        """
         self.__router_id = router_id
+        # inputs format: [5001, 5002, 5003]
         self.__input_ports = inputs
+        # outputs format: [6010(port), 2(metric), 3(router_id)]
         self.__output_ports = outputs
         self.__period = period
         self.__timeout = timeout
@@ -67,6 +73,34 @@ class Router:
 
     def get_interface(self):
         return self.__interface
+
+    def advertise_routes(self):
+        """
+        advertise the routes of routing table to all the neighbours (ouput ports)
+        """
+        try:
+            ports_num = len(self.__output_ports)
+            if (ports_num < 1):
+                raise ValueError("There's no output port/socket available")
+            for i in range(ports_num):
+                dest_port = self.__output_ports[i][0]
+                # message id for test
+                message = bytes(f'update from router {self.__router_id}, port {self.__input_ports[0]}', 'utf-8')
+                self.__interface.send(message, dest_port)
+                print(f"sent message to {dest_port}")
+        except ValueError as error:
+            print(error)
+
+    def receive_routes(self):
+        """
+        receive the routes update from neighbours (input ports)
+        """
+        input_sockets = []
+        for input_port in self.__input_ports:
+            input_sockets.append(self.__interface.ports_sockets[input_port])
+        packet_list = self.__interface.receive(input_sockets)
+        print("receiving message")
+        return packet_list
 
     def init_routing_table(self):
         print("init_routing_table starts...")

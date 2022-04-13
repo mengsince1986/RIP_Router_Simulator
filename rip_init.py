@@ -7,8 +7,8 @@ File: rip_init.py
 ###############################################################################
 #                                Import Modules                               #
 ###############################################################################
-from IO_parser import *
-from rip_router import *
+from IO_parser import router_config
+from rip_router import Router
 
 ###############################################################################
 #                                Init Functions                               #
@@ -29,4 +29,5 @@ def rip_router_init(config_file_name):
                         config['output_ports_metric_id'],
                         config['period'],
                         config['timeout'])
+    print(f"Created Router {router.get_router_id()}")
     return router

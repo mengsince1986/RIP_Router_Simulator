@@ -45,6 +45,8 @@ class Interface:
                 udp_socket = socket.socket(socket.AF_INET,
                                            socket.SOCK_DGRAM)
                 udp_socket.bind((self.host, port))
+                # udp_socket.setblocking(0)  # blocking switch
+
                 self.ports_sockets[port] = udp_socket
         except socket.error as error:
             print("Failed to initialise sockets for ports\n", error)
@@ -66,12 +68,15 @@ class Interface:
         Return: (data, port)
         """
         sockets_to_read = (select.select(sockets, [], [], self.select_timeout))[0]
+        # port = []
+        data_list = []
         for socket_to_read in sockets_to_read:
             # get the receiving port number which the socket binds
-            port = socket_to_read.getsockname()
+            # port = socket_to_read.getsockname()
             # get data from socket
             data = socket_to_read.recv(1024)
-        return data, port
+            data_list.append(data)
+        return data_list
 
     def send(self, data_bytes, dest_port):
         """
