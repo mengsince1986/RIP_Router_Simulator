@@ -4,6 +4,15 @@ Authors: MENG ZHANG (71682325), ZHENG CHAO
 File: rip_router.py
 """
 
+###############################################################################
+#                                Import Modules                               #
+###############################################################################
+from network_interface import Interface
+
+###############################################################################
+#                                 Router Class                                #
+###############################################################################
+
 class Router:
     """
     Create a new router object
@@ -14,6 +23,8 @@ class Router:
         self.output_ports = outputs
         self.period = period
         self.timeout = timeout
+        self.interface = None
+        self.init_interface(inputs)
         self.routing_table = None
         self.init_routing_table()
 
@@ -49,6 +60,9 @@ class Router:
 
     def set_timeout(self, new_timeout):
         self.timeout = new_timeout
+
+    def init_interface(self, ports):
+        self.interface = Interface(ports)
 
     def init_routing_table(self):
         print("init_routing_table starts...")
@@ -87,3 +101,5 @@ if __name__ == '__main__':
     print("Routing_table: {0}".format(new_router.get_routing_table()))
     print()
     print(new_router)
+    print()
+    print(new_router.interface)
