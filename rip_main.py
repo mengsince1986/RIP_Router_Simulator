@@ -31,12 +31,10 @@ if __name__ == "__main__":
     except ValueError as error:
         print(error)
 
-    # Initialise router
+    # Initialise router with interface (sockets binding)
     ROUTER = rip_router_init(config_file_name)
     
     print(ROUTER)
     print()
     print(ROUTER.update_routing_table())
     ROUTER.print_routing_table()
-
-    # TODO: Initialise sockets

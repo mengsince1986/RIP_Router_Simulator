@@ -30,11 +30,3 @@ def rip_router_init(config_file_name):
                         config['period'],
                         config['timeout'])
     return router
-
-def rip_sockets_init(ports):
-    """
-    Parameter:
-    ports: a list of input ports
-
-    TODO: Create and bind input sockets
-    """

@@ -18,55 +18,59 @@ class Router:
     Create a new router object
     """
     def __init__(self, router_id, inputs, outputs, period, timeout):
-        self.router_id = router_id
-        self.input_ports = inputs
-        self.output_ports = outputs
-        self.period = period
-        self.timeout = timeout
-        self.interface = None
+        self.__router_id = router_id
+        self.__input_ports = inputs
+        self.__output_ports = outputs
+        self.__period = period
+        self.__timeout = timeout
+        self.__interface = None
         self.init_interface(inputs)
-        self.routing_table = None
+        self.__routing_table = None
         self.init_routing_table()
 
     def get_router_id(self):
         """
         router_id getter
         """
-        return self.router_id
+        return self.__router_id
 
     def set_router_id(self, new_id):
-        self.router_id = new_id
+        self.__router_id = new_id
 
     def get_input_ports(self):
-        return self.input_ports
+        return self.__input_ports
 
     def set_input_ports(self, new_inputs):
-        self.input_ports = new_inputs
+        self.__input_ports = new_inputs
+        self.init_interface(new_inputs)
 
     def get_output_ports(self):
-        return self.output_ports
+        return self.__output_ports
 
     def set_output_ports(self, new_outputs):
-        self.output_ports = new_outputs
+        self.__output_ports = new_outputs
 
     def get_period(self):
-        return self.period
+        return self.__period
 
     def set_period(self, new_period):
-        self.period = new_period
+        self.__period = new_period
 
     def get_timeout(self):
-        return self.timeout
+        return self.__timeout
 
     def set_timeout(self, new_timeout):
-        self.timeout = new_timeout
+        self.__timeout = new_timeout
 
     def init_interface(self, ports):
-        self.interface = Interface(ports)
+        self.__interface = Interface(ports)
+
+    def get_interface(self):
+        return self.__interface
 
     def init_routing_table(self):
         print("init_routing_table starts...")
-        self.routing_table = {self.router_id: ["Next Hop", 0, "timer", "Notes"]}
+        self.__routing_table = {self.__router_id: ["Next Hop", 0, "timer", "Notes"]}
         return True
 
     def update_routing_table(self):
@@ -74,7 +78,7 @@ class Router:
         return "====================Update Router {}====================".format(self.get_router_id())
 
     def get_routing_table(self):
-        return self.routing_table
+        return self.__routing_table
 
     def print_routing_table(self):
         print(self.get_routing_table())
@@ -84,11 +88,11 @@ class Router:
                 "Input Ports: {1}\n"
                 "Output Ports: {2}\n"
                 "Period: {3}\n"
-                "Timeout: {4}").format(self.router_id,
-                                       self.input_ports,
-                                       self.output_ports,
-                                       self.period,
-                                       self.timeout)
+                "Timeout: {4}").format(self.__router_id,
+                                       self.__input_ports,
+                                       self.__output_ports,
+                                       self.__period,
+                                       self.__timeout)
 
 
 if __name__ == '__main__':
@@ -102,4 +106,4 @@ if __name__ == '__main__':
     print()
     print(new_router)
     print()
-    print(new_router.interface)
+    print(new_router.get_interface())
