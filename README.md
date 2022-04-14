@@ -41,9 +41,9 @@
         - [x] Implement IO_parser.py
         - [x] Implement IO_format.py
         - [x] Implement rip_main.py sys.argv part
-        - [ ] Implement rip_init.py
+        - [x] Implement rip_init.py
             - [x] init Router
-            - [ ] init Sockets
+            - [x] init Sockets==>Interface
         - [ ] Implement rip_router.py
             - [x] __init__ part
             - [ ] timer

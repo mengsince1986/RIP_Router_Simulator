@@ -8,7 +8,7 @@ File: rip_router.py
 #                                Import Modules                               #
 ###############################################################################
 from network_interface import Interface
-
+from IO_format import *
 ###############################################################################
 #                                 Router Class                                #
 ###############################################################################
@@ -108,11 +108,18 @@ class Router:
         a rip format packet for advertise_routes() method
         """
 
-    def triggered_packet(self):
+    def triggered_packet(self, updated_routes):
         """
-        # TODO: Meng
+        # TODO: Scott
         Process the data of changed routes and convert it into a rip
         format packet for advertise_routes() method
+        """
+
+    def process_received_update(self):
+        """
+        # TODO: Meng
+        Process the received update and update_routing_table() and
+        advertise triggered_packet if necessary
         """
 
     def receive_routes(self):
