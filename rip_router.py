@@ -74,9 +74,19 @@ class Router:
     def get_interface(self):
         return self.__interface
 
+    def advertise_routes_periodically(self):
+        """
+        call advertise_routes() periodcally based on period (timer)
+        """
+
     def advertise_routes(self):
         """
-        advertise the routes of routing table to all the neighbours (ouput ports)
+        # TODO: Meng
+        get the latest advertising rip packet from
+        update_packet() & triggered_packet() methods and
+        advertise the packet to all the neighbours (ouput ports)
+
+        need to add a parameter for updata_packet/triggered_packet
         """
         try:
             ports_num = len(self.__output_ports)
@@ -91,8 +101,23 @@ class Router:
         except ValueError as error:
             print(error)
 
+    def update_packet(self):
+        """
+        # TODO: Meng
+        Process the current routing table data and convert it into
+        a rip format packet for advertise_routes() method
+        """
+
+    def triggered_packet(self):
+        """
+        # TODO: Meng
+        Process the data of changed routes and convert it into a rip
+        format packet for advertise_routes() method
+        """
+
     def receive_routes(self):
         """
+        # TODO: Meng
         receive the routes update from neighbours (input ports)
         """
         input_sockets = []
@@ -108,6 +133,9 @@ class Router:
         return True
 
     def update_routing_table(self):
+        """
+        # TODO: Meng
+        """
         print("update_routing_table starts...")
         return "====================Update Router {}====================".format(self.get_router_id())
 
@@ -115,6 +143,12 @@ class Router:
         return self.__routing_table
 
     def print_routing_table(self):
+        """
+        # TODO: Scott
+        Get the self.__routing_table and print it out
+
+        need IO_format module
+        """
         print(self.get_routing_table())
 
     def __str__(self):

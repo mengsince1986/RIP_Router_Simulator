@@ -38,6 +38,6 @@ if __name__ == "__main__":
     while True:
         ROUTER.advertise_routes()
         messages = ROUTER.receive_routes()
-        for m in messages:
-            print(m)
+        for message in messages:
+            print(message)
         time.sleep(5)
