@@ -7,6 +7,8 @@ File: rip_router.py
 ###############################################################################
 #                                Import Modules                               #
 ###############################################################################
+import time
+import random
 from network_interface import Interface
 from IO_format import *
 ###############################################################################
@@ -76,8 +78,16 @@ class Router:
 
     def advertise_routes_periodically(self):
         """
-        call advertise_routes() periodcally based on period (timer)
+        Call advertise_routes() periodcally by self.__period
+
+        Use random.random() to calculate offset for self.__period
+        in order to avoid synchronized update messages which can lead
+        to unnecessary collisions on broadcast networks.
         """
+        offset = random.random() * self.__period
+        while True:
+            self.advertise_routes()
+            time.sleep(self.__period + offset)
 
     def advertise_routes(self):
         """
@@ -97,7 +107,7 @@ class Router:
                 # message id for test
                 message = bytes(f'update from router {self.__router_id}, port {self.__input_ports[0]}', 'utf-8')
                 self.__interface.send(message, dest_port)
-                print(f"sent message to {dest_port}")
+                print(f"sent message to {dest_port} at {time.ctime()}")
         except ValueError as error:
             print(error)
 
@@ -125,14 +135,16 @@ class Router:
     def receive_routes(self):
         """
         # TODO: Meng
-        receive the routes update from neighbours (input ports)
+        Receive the routes update from neighbours (input ports)
+
+        The implementation is in a while loop and should be called with
+        a separate thread from the main thread
         """
-        input_sockets = []
-        for input_port in self.__input_ports:
-            input_sockets.append(self.__interface.ports_sockets[input_port])
-        packet_list = self.__interface.receive(input_sockets)
-        print("receiving message")
-        return packet_list
+        while True:
+            packets_list = self.__interface.receive()
+            for packet in packets_list:
+                print(packet)
+
 
     def init_routing_table(self):
         print("init_routing_table starts...")

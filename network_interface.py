@@ -57,7 +57,7 @@ class Interface:
         """
         return self.ports_sockets
 
-    def receive(self, sockets):
+    def receive(self):
         """
         Using select() to monitor a list of ports and receive the port
         with readable data
@@ -67,6 +67,9 @@ class Interface:
 
         Return: (data, port)
         """
+        sockets = []
+        for input_socket in self.ports_sockets.values():
+            sockets.append(input_socket)
         sockets_to_read = (select.select(sockets, [], [], self.select_timeout))[0]
         # port = []
         data_list = []
@@ -110,11 +113,7 @@ if __name__ == "__main__":
     sender = Interface([6010, 6011, 6012])
     receiver = Interface([6020, 6021, 6022])
     sender.send(b'hello, world', 6021)
-    assert receiver.receive([receiver.ports_sockets[6020],
-                             receiver.ports_sockets[6021],
-                             receiver.ports_sockets[6022]])[0] == b"hello, world", "send/receive failed test"
+    assert receiver.receive()[0] == b"hello, world", "send/receive failed test"
     sender.send(b'hello, again', 6020)
-    assert receiver.receive([receiver.ports_sockets[6020],
-                             receiver.ports_sockets[6021],
-                             receiver.ports_sockets[6022]])[0] == b"hello, again", "send/receive failed test"
+    assert receiver.receive()[0] == b"hello, again", "send/receive failed test"
     print("send/receive passed test")
