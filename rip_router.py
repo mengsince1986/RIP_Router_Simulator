@@ -10,6 +10,8 @@ File: rip_router.py
 import time
 import random
 from network_interface import Interface
+from forwarding_route import Route
+from rip_packet import RipPacket, RipEntry
 from IO_format import *
 ###############################################################################
 #                                 Router Class                                #
@@ -23,17 +25,20 @@ class Router:
         """
         the __* attributes are private attributes which can only be
         accessed by getter outside of class.
+
+        inputs format: [5001, 5002, 5003]
+        outputs format: [6010(port), 2(metric), 3(router_id)]
         """
+        # Instance attributes
         self.__router_id = router_id
-        # inputs format: [5001, 5002, 5003]
         self.__input_ports = inputs
-        # outputs format: [6010(port), 2(metric), 3(router_id)]
         self.__output_ports = outputs
         self.__period = period
         self.__timeout = timeout
         self.__interface = None
+        self.__routing_table = {}
+        # Initialisation
         self.init_interface(inputs)
-        self.__routing_table = None
         self.init_routing_table()
 
     def get_router_id(self):
@@ -147,16 +152,27 @@ class Router:
 
 
     def init_routing_table(self):
-        print("init_routing_table starts...")
-        self.__routing_table = {self.__router_id: ["Next Hop", 0, "timer", "Notes"]}
-        return True
+        """
+        Initialise the __routing_table attribute
+
+        Route object format:
+        route.next_hop: 2,
+        route.metric: 1,
+        route.timer: 1234,
+        state(default): 'active'
+        """
+        print("initialising routing table...")
+        # Create a new Route object of to router itself
+        self_route = Route('-', 0, time.time())
+        self.__routing_table[self.__router_id] = self_route
+
 
     def update_routing_table(self):
         """
         # TODO: Meng
         """
         print("update_routing_table starts...")
-        return "====================Update Router {}====================".format(self.get_router_id())
+
 
     def get_routing_table(self):
         return self.__routing_table
@@ -168,7 +184,28 @@ class Router:
 
         need IO_format module
         """
-        print(self.get_routing_table())
+        # Table header
+        header = "-------------------------------------------------\n" +\
+                f"|         Router {self.__router_id:02} RIP ROUTING TABLE           |\n" +\
+                 "=================================================\n" +\
+                 "|   Next   |   Metric   |   Timer   |   State   |\n" +\
+                 "================================================="
+        # Table bottom
+        bottom = "\n-------------------------------------------------"
+        # Table content
+        content = ""
+        rip_routes = self.__routing_table.values()
+        for rip_route in rip_routes:
+            next_hop = rip_route.next_hop
+            metric = rip_route.metric
+            timer = int(time.time() - rip_route.timer)
+            state = rip_route.state
+            content += f"|{next_hop:^10}|{metric:^12}|{timer:^11.0f}|{state:^11}|"
+        content += bottom
+        # printing
+        print(header)
+        print(content)
+
 
     def __str__(self):
         return ("Router: {0}\n"
