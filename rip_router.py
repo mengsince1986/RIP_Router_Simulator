@@ -110,18 +110,28 @@ class Router:
             for i in range(ports_num):
                 dest_port = self.__output_ports[i][0]
                 # message id for test
-                message = bytes(f'update from router {self.__router_id}, port {self.__input_ports[0]}', 'utf-8')
-                self.__interface.send(message, dest_port)
+                # message = bytes(f'update from router {self.__router_id}, port {self.__input_ports[0]}', 'utf-8')
+                packet = self.update_packet()
+                self.__interface.send(packet, dest_port)
                 print(f"sent message to {dest_port} at {time.ctime()}")
         except ValueError as error:
             print(error)
 
     def update_packet(self):
         """
-        # TODO: Meng
+        # Done: Meng
         Process the current routing table data and convert it into
         a rip format packet for advertise_routes() method
         """
+        # Create RipEntries for all the routes
+        entries = []
+        for dest, route in self.__routing_table.items():
+            entry = RipEntry(dest, route.metric)
+            entries.append(entry)
+        # Create RipPacket
+        packet = RipPacket(entries, self.__router_id)
+        packet_bytes = packet.packet_bytes()
+        return packet_bytes
 
     def triggered_packet(self, updated_routes):
         """
