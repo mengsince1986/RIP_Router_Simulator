@@ -12,7 +12,7 @@ import random
 from network_interface import Interface
 from forwarding_route import Route
 from rip_packet import RipPacket, RipEntry
-from IO_format import *
+from IO_formatter import *
 ###############################################################################
 #                                 Router Class                                #
 ###############################################################################
@@ -190,10 +190,11 @@ class Router:
 
     def print_routing_table(self):
         """
-        # TODO: Scott
+        # Done: Scott
         Get the self.__routing_table and print it out
 
         need IO_format module
+        """
         """
         # Table header
         header = "-------------------------------------------------\n" +\
@@ -216,6 +217,9 @@ class Router:
         # printing
         print(header)
         print(content)
+        """
+        print(routing_table_formatter(self.__router_id,
+                                      self.__routing_table))
 
 
     def __str__(self):
