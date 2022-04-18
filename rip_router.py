@@ -116,6 +116,8 @@ class Router:
                 print(f"sent message to {dest_port} at {time.ctime()}")
         except ValueError as error:
             print(error)
+        finally:
+            self.print_routing_table()
 
     def update_packet(self):
         """
@@ -141,16 +143,20 @@ class Router:
         format packet for advertise_routes() method
         """
 
-    def process_received_update(self):
+    def process_received_packet(self, raw_packet):
         """
         # TODO: Meng
-        Process the received update and update_routing_table() and
-        advertise triggered_packet if necessary
+        Process the received packet and call update_routing_table()
+        if necessary
+
+        Parameter: packet
+        an array of bytes
         """
+        packet = RipPacket.decode_packet(raw_packet)
+        
 
     def receive_routes(self):
         """
-        # TODO: Meng
         Receive the routes update from neighbours (input ports)
 
         The implementation is in a while loop and should be called with
@@ -158,8 +164,8 @@ class Router:
         """
         while True:
             packets_list = self.__interface.receive()
-            for packet in packets_list:
-                print(packet)
+            for raw_packet in packets_list:
+                self.process_received_packet(raw_packet)
 
 
     def init_routing_table(self):
@@ -172,13 +178,12 @@ class Router:
         route.timer: 1234,
         state(default): 'active'
         """
-        print("initialising routing table...")
         # Create a new Route object of to router itself
         self_route = Route('-', 0, time.time())
         self.__routing_table[self.__router_id] = self_route
 
 
-    def update_routing_table(self):
+    def update_routing_table(self, route):
         """
         # TODO: Meng
         """
@@ -191,32 +196,7 @@ class Router:
     def print_routing_table(self):
         """
         # Done: Scott
-        Get the self.__routing_table and print it out
-
-        need IO_format module
-        """
-        """
-        # Table header
-        header = "-------------------------------------------------\n" +\
-                f"|         Router {self.__router_id:02} RIP ROUTING TABLE           |\n" +\
-                 "=================================================\n" +\
-                 "|   Next   |   Metric   |   Timer   |   State   |\n" +\
-                 "================================================="
-        # Table bottom
-        bottom = "\n-------------------------------------------------"
-        # Table content
-        content = ""
-        rip_routes = self.__routing_table.values()
-        for rip_route in rip_routes:
-            next_hop = rip_route.next_hop
-            metric = rip_route.metric
-            timer = int(time.time() - rip_route.timer)
-            state = rip_route.state
-            content += f"|{next_hop:^10}|{metric:^12}|{timer:^11.0f}|{state:^11}|"
-        content += bottom
-        # printing
-        print(header)
-        print(content)
+        Print the current self.__routing_table
         """
         print(routing_table_formatter(self.__router_id,
                                       self.__routing_table))

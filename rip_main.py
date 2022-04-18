@@ -35,7 +35,6 @@ if __name__ == "__main__":
 
     # Initialise router with interface (sockets binding)
     ROUTER = rip_router_init(config_file_name)
-    ROUTER.print_routing_table()
     # Receive from input ports in a new thread
     receiver_thread = threading.Thread(target=ROUTER.receive_routes)
     receiver_thread.start()

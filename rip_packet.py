@@ -33,6 +33,45 @@ class RipPacket:
         self.entries = entries
 
 
+    @classmethod
+    def decode_packet(cls, raw_packet):
+        """
+        Parameter:
+        raw_packet: a packet of bytes
+        i.e.
+        HEADER:
+        [command(1 byte), version(1), sender_id(2)]
+        ENTRY:
+        [afi(2 bytes), padding(2)
+        dest(4)
+        padding(4)
+        padding(4)
+        metric(4)]
+
+        Return (True, RipPacket object) if raw_packet is valid,
+        otherwise return (False, sender_id)
+        """
+        # Header: 4 bytes [0:4]
+        command = raw_packet[0]
+        version = raw_packet[1]
+        sender_id = (raw_packet[2] << 8) + raw_packet[3]
+        entries_num = int(len(raw_packet[4:]) / cls.ENTRY_LEN)
+        if (not cls.is_valid_header(command, version,
+                                    sender_id, entries_num)):
+            return (False, sender_id)
+        # Entries: n * 20 bytes [4:]
+        # decode each entry
+        entries = []
+        for i in range(4, len(raw_packet), cls.ENTRY_LEN):
+            raw_entry = raw_packet[i:i+cls.ENTRY_LEN]
+            entry = RipEntry.decode_enty(raw_entry)
+            entries.append(entry)
+        if None in entries:
+            return (False, sender_id)
+        rip_packet = RipPacket(entries, sender_id)
+        return rip_packet
+
+
     def packet_bytes(self):
         """
         Return a rip packet in array of bytes
@@ -57,6 +96,7 @@ class RipPacket:
         header = command_byte + version_byte + sender_id_bytes
         return header
 
+
     def entries_bytes(self):
         """
         Return a list of 20-byte rip entry
@@ -67,22 +107,16 @@ class RipPacket:
         return entries
 
 
-    def is_valid_packet(self):
+    def is_valid_header(self, command, version, entries_num):
         """
         check if a packet is valid
         """
-        is_valid_command = self.command == 2
-        is_valid_version = self.version == 2
-        is_valid_entries_num = 1 <= len(self.entries) <= 25
-        is_valid_entries = True
-        for entry in self.entries:
-            if not entry.is_valid_entry:
-                is_valid_entries = False
-                break
+        is_valid_command = command == 2
+        is_valid_version = version == 2
+        is_valid_entries_num = 1 <= entries_num <= 25
         return is_valid_command and\
                is_valid_version and\
-               is_valid_entries_num and\
-               is_valid_entries
+               is_valid_entries_num
 
 
 ###############################################################################
@@ -106,6 +140,42 @@ class RipEntry:
         self.dest = dest
         self.metric = metric
         self.afi = afi
+
+
+    @classmethod
+    def decode_enty(cls, raw_entry):
+        """
+        Parameter:
+        raw_entry: an entry of bytes
+        i.e.
+        ENTRY:
+        [afi(2 bytes), padding(2)
+        dest(4)
+        padding(4)
+        padding(4)
+        metric(4)]
+
+        Return RipEntry object if raw_entry is valid,
+        otherwise return None
+        """
+        # afi: 2 bytes [0:3]
+        afi = (raw_entry[0] << 8) + raw_entry[1]
+        # dest: 4 bytes but practically take 2 bytes [4:8]
+        if (raw_entry[4] != 0 or
+            raw_entry[5] != 0):
+            return None
+        dest = (raw_entry[6] << 8) + raw_entry[7]
+        # metric 4 bytes but practically take 1 byte [16:]
+        if (raw_entry[16] != 0 or
+            raw_entry[17] != 0 or
+            raw_entry[18] != 0):
+            return None
+        metric = raw_entry[19]
+        entry = RipEntry(dest, metric, afi)
+        if not entry.is_valid_entry():
+            return None
+        return entry
+
 
     def entry_bytes(self):
         """
@@ -137,7 +207,8 @@ class RipEntry:
         """
         is_valid_dest = 1 <= self.dest <= 64000
         is_valid_metric = 1 <= self.metric <= 16
-        return is_valid_dest and is_valid_metric
+        is_valid_afi = self.afi == 2
+        return is_valid_dest and is_valid_metric and is_valid_afi
 
     def set_metric_infinite(self):
         """
@@ -170,6 +241,10 @@ if __name__ == '__main__':
     assert len(entry2_bytes) == 20, "Wrong RipEntry byte length"
     assert entry2_bytes[0] == 0 and entry2_bytes[1] == 2, "Wrong RipEntry afi bytes"
     assert entry2_bytes[7] == 3, "Wrong RipEntry dest bytes"
+    entry2_decode = RipEntry.decode_enty(entry2_bytes)
+    assert entry2_decode.afi == 2, "Wrong RipEntry afi"
+    assert entry2_decode.dest == 3 , "Wrong RipEntry decode dest"
+    assert entry2_decode.metric == 2, "Wrong RipEntry decode metric"
     print("passed RipEntry class tests")
 
     entries_lst = [entry1, entry2]
@@ -180,4 +255,11 @@ if __name__ == '__main__':
     assert test_rip_packet.router_id == 2, "Wrong RipPacket router ID"
     assert len(test_rip_packet.header_bytes()) == 4, "Invalid header length"
     assert len(test_rip_packet.entries_bytes()) % 20 == 0, "Invalid entries length"
+    test_rip_packet_bytes = test_rip_packet.packet_bytes()
+    test_rip_packet_decode = RipPacket.decode_packet(test_rip_packet_bytes)
+    assert test_rip_packet_decode.command == 2, "Invalid RipPacket decode command"
+    assert test_rip_packet_decode.version == 2, "Invalid RipPacket decode version"
+    assert test_rip_packet_decode.router_id == 2, "Invalid RipPacket decode router_id"
+    assert test_rip_packet_decode.entries[0].metric == entry1.metric and\
+        test_rip_packet_decode.entries[0].dest == entry1.dest, "Invalid RipPacket decode entry"
     print("passed RipPacket Class tests")
