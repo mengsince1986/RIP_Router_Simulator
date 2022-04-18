@@ -128,6 +128,7 @@ class Router:
         for dest, route in self.__routing_table.items():
             entry = RipEntry(dest, route.metric)
             entries.append(entry)
+
         # Create RipPacket
         packet = RipPacket(entries, self.__router_id)
         packet_bytes = packet.packet_bytes()
