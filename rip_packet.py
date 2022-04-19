@@ -169,12 +169,14 @@ class RipEntry:
         # dest: 4 bytes but practically take 2 bytes [4:8]
         if (raw_entry[4] != 0 or
             raw_entry[5] != 0):
+            print("Invalid dest of entry")
             return None
         dest = (raw_entry[6] << 8) + raw_entry[7]
         # metric 4 bytes but practically take 1 byte [16:]
         if (raw_entry[16] != 0 or
             raw_entry[17] != 0 or
             raw_entry[18] != 0):
+            print("Invalid metric of entry")
             return None
         metric = raw_entry[19]
         entry = RipEntry(dest, metric, afi)

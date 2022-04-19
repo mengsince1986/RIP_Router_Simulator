@@ -19,7 +19,9 @@ class Route:
     i.e. What if we accidentally do: route[error_key] = error
     """
 
-    def __init__(self, next_hop, metric, timer, state = 'active'):
+    def __init__(self, next_hop, metric,
+                 timeout, garbage_collect_time=None,
+                 state = 'active'):
         """
         route format:
         route.next_hop: 2,
@@ -31,5 +33,6 @@ class Route:
         """
         self.next_hop = next_hop
         self.metric = metric
-        self.timer = timer
+        self.timeout = timeout
+        self.garbage_collect_time = garbage_collect_time
         self.state = state
