@@ -56,8 +56,9 @@ class RipPacket:
         version = raw_packet[1]
         sender_id = (raw_packet[2] << 8) + raw_packet[3]
         entries_num = int(len(raw_packet[4:]) / cls.ENTRY_LEN)
-        if (not cls.is_valid_header(command, version,
-                                    sender_id, entries_num)):
+        #        print(f'command: {command}\nversion: {version}\nRouter ID: {sender_id}\nentries_num: {entries_num}')
+        if not cls.is_valid_header(command, version, sender_id, entries_num):
+            print("Broken packet:", "invalid header")
             return (False, sender_id)
         # Entries: n * 20 bytes [4:]
         # decode each entry
@@ -67,9 +68,10 @@ class RipPacket:
             entry = RipEntry.decode_enty(raw_entry)
             entries.append(entry)
         if None in entries:
+            print("Broken packet:", "invalid entry")
             return (False, sender_id)
         rip_packet = RipPacket(entries, sender_id)
-        return rip_packet
+        return (True, rip_packet)
 
 
     def packet_bytes(self):
@@ -106,16 +108,18 @@ class RipPacket:
             entries += entry.entry_bytes()
         return entries
 
-
-    def is_valid_header(self, command, version, entries_num):
+    @classmethod
+    def is_valid_header(self, command, version, router_id, entries_num):
         """
         check if a packet is valid
         """
         is_valid_command = command == 2
         is_valid_version = version == 2
+        is_valid_id = 1 <= router_id <= 64000
         is_valid_entries_num = 1 <= entries_num <= 25
         return is_valid_command and\
                is_valid_version and\
+               is_valid_id and\
                is_valid_entries_num
 
 
@@ -206,7 +210,7 @@ class RipEntry:
         check if an entry is valid
         """
         is_valid_dest = 1 <= self.dest <= 64000
-        is_valid_metric = 1 <= self.metric <= 16
+        is_valid_metric = 0 <= self.metric <= 16
         is_valid_afi = self.afi == 2
         return is_valid_dest and is_valid_metric and is_valid_afi
 
@@ -256,7 +260,7 @@ if __name__ == '__main__':
     assert len(test_rip_packet.header_bytes()) == 4, "Invalid header length"
     assert len(test_rip_packet.entries_bytes()) % 20 == 0, "Invalid entries length"
     test_rip_packet_bytes = test_rip_packet.packet_bytes()
-    test_rip_packet_decode = RipPacket.decode_packet(test_rip_packet_bytes)
+    is_valid, test_rip_packet_decode = RipPacket.decode_packet(test_rip_packet_bytes)
     assert test_rip_packet_decode.command == 2, "Invalid RipPacket decode command"
     assert test_rip_packet_decode.version == 2, "Invalid RipPacket decode version"
     assert test_rip_packet_decode.router_id == 2, "Invalid RipPacket decode router_id"

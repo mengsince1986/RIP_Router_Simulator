@@ -39,7 +39,7 @@ if __name__ == "__main__":
     receiver_thread = threading.Thread(target=ROUTER.receive_routes)
     receiver_thread.start()
     # Advertise to ouput ports in a new thread
-    advertiser_thread = threading.Thread(target=ROUTER.advertise_routes_periodically)
+    advertiser_thread = threading.Thread(target=ROUTER.advertise_all_routes_periodically)
     advertiser_thread.start()
 
     # Join threads

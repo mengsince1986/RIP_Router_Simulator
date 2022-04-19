@@ -26,8 +26,12 @@ class Router:
         the __* attributes are private attributes which can only be
         accessed by getter outside of class.
 
-        inputs format: [5001, 5002, 5003]
-        outputs format: [6010(port), 2(metric), 3(router_id)]
+        inputs: [5001, 5002, 5003]
+        outputs format: [[6010(port), 2(metric), 3(router_id)], [...], ...]
+        output ports format: {6010(port): {'metric': 1, 'router_id': 1},
+                              6030(port): {'metric': 2, 'router_id': 3},
+                              ... : {...}
+                             }
         """
         # Instance attributes
         self.__router_id = router_id
@@ -81,9 +85,9 @@ class Router:
     def get_interface(self):
         return self.__interface
 
-    def advertise_routes_periodically(self):
+    def advertise_all_routes_periodically(self):
         """
-        Call advertise_routes() periodcally by self.__period
+        Call advertise_all_routes() periodcally by self.__period
 
         Use random.random() to calculate offset for self.__period
         in order to avoid synchronized update messages which can lead
@@ -91,10 +95,12 @@ class Router:
         """
         offset = random.random() * self.__period
         while True:
-            self.advertise_routes()
+            self.advertise_all_routes()
+            self.print_routing_table()
             time.sleep(self.__period + offset)
 
-    def advertise_routes(self):
+
+    def advertise_all_routes(self):
         """
         # TODO: Meng
         get the latest advertising rip packet from
@@ -107,28 +113,40 @@ class Router:
             ports_num = len(self.__output_ports)
             if (ports_num < 1):
                 raise ValueError("There's no output port/socket available")
-            for i in range(ports_num):
-                dest_port = self.__output_ports[i][0]
+            for dest_port, metric_id in self.__output_ports.items():
                 # message id for test
                 # message = bytes(f'update from router {self.__router_id}, port {self.__input_ports[0]}', 'utf-8')
-                packet = self.update_packet()
+                packet = self.update_packet(dest_port)
                 self.__interface.send(packet, dest_port)
-                print(f"sent message to {dest_port} at {time.ctime()}")
+                print(f"sends update packet to Router {metric_id['router_id']} [{dest_port}] at {time.ctime()}")
         except ValueError as error:
             print(error)
-        finally:
-            self.print_routing_table()
 
-    def update_packet(self):
+
+    def update_packet(self, receiver_port):
         """
         # Done: Meng
+        parameter:
+        receiver_port
+
         Process the current routing table data and convert it into
-        a rip format packet for advertise_routes() method
+        a rip format packet for advertise_all_routes() method
         """
         # Create RipEntries for all the routes
         entries = []
         for dest, route in self.__routing_table.items():
-            entry = RipEntry(dest, route.metric)
+            metric = None
+            if dest == self.__router_id:
+                # if the destination is myself,
+                # get the metric from the __outputs_ports by receiver_port
+                # instead of the route.metric which is always 0
+                for output_port, metric_id in self.__output_ports.items():
+                    # output format: {6010(port): {'metric': 2, 'router_id': 3}}
+                    if output_port == receiver_port:
+                        metric = metric_id['metric']
+            else:
+                metric = route.metric
+            entry = RipEntry(dest, metric)
             entries.append(entry)
 
         # Create RipPacket
@@ -152,8 +170,18 @@ class Router:
         Parameter: packet
         an array of bytes
         """
-        packet = RipPacket.decode_packet(raw_packet)
-        
+        # Check if raw_packet valid in RipPacket and RipEntry classes
+        # Process the raw_packet if valid,
+        # and return (True, RipPacket object)
+        # otherwise, return (False, router_id)
+        is_valid, rip_packet = RipPacket.decode_packet(raw_packet)
+        if is_valid:
+            # check and update routing_table
+            print(f'Received update from Router {rip_packet.router_id}')
+            self.update_routing_table(rip_packet)
+        else:
+            # drop the packet
+            print(f'Drop invalid packet from Router {rip_packet}')
 
     def receive_routes(self):
         """
@@ -183,15 +211,78 @@ class Router:
         self.__routing_table[self.__router_id] = self_route
 
 
-    def update_routing_table(self, route):
+    def update_routing_table(self, rip_packet):
         """
         # TODO: Meng
+        check all the entries in rip_packet object, and update current
+        routing table if necessary
+
+        Parameter:
+        rip_packet: a valid rip_packet object
+
+        Reture: boolean
+        return True if new route added, otherwise False
         """
-        print("update_routing_table starts...")
+        has_updated = False
+        sender_id = rip_packet.router_id
+        metric_to_sender = None
+        for neighbour in self.__output_ports.values():
+            if neighbour['router_id'] == sender_id:
+                metric_to_sender = neighbour['metric']
+        for entry in rip_packet.entries:
+            #if route to dest is unavailable
+            if not entry.dest in self.__routing_table.keys():
+                """
+                # the metric to the new dest is equal to
+                # the metric from neighbour to dest +
+                # the metric to neighbour
+                metric = entry.metric + metric_to_sender
+                for neighbour in self.__output_ports.values():
+                    # check if the destination is one of the neighbours
+                    if neighbour['router_id'] == entry.dest:
+                        # if the dest is our neighbor, no need to add
+                        # additional metric
+                        metric = entry.metric
+                new_route = Route(rip_packet.router_id,
+                                  metric,
+                                  time.time())
+                self.__routing_table[entry.dest] = new_route
+                """
+                self.adding_new_route(entry, sender_id, metric_to_sender)
+                has_updated = True
+            else:
+                # if route to dest is available
+                pass
+        return has_updated
+
+
+    def adding_new_route(self, entry, sender_id,  metric_to_sender):
+        """
+        add a new route to the routing table
+
+        parameters:
+        entry: the RipEntry object which contains the new route
+        metric_to_sender: the int metric to the sender
+        """
+        # the metric to the new dest is equal to
+        # the metric from neighbour to dest +
+        # the metric to neighbour
+        metric = entry.metric + metric_to_sender
+        for neighbour in self.__output_ports.values():
+            # check if the destination is one of the neighbours
+            if neighbour['router_id'] == entry.dest:
+                # if the dest is our neighbor, no need to add
+                # additional metric
+                metric = entry.metric
+        new_route = Route(sender_id,
+                          metric,
+                          time.time())
+        self.__routing_table[entry.dest] = new_route
 
 
     def get_routing_table(self):
         return self.__routing_table
+
 
     def print_routing_table(self):
         """

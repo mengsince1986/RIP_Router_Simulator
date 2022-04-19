@@ -1,0 +1,8 @@
+@startuml COSC364 RIP Network Topology
+object Router_1
+object Router_2
+object Router_3
+
+Router_1 "6010" -- "6020" Router_2 : 1
+Router_2 "6021"-- "6030" Router_3 : 2
+@enduml

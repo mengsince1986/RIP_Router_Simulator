@@ -17,11 +17,11 @@ def router_config(file_name):
     period 3
     timeout 18
     ------------------------------
-    
+
     Return: config_data
     a dictionary with 4 keys of router_id, input_ports, output_ports,
     timers
-    i.e. {'router_id': 2, 'input_ports': [6020, 6021], 'output_ports_metric_id': [[6010, 1, 1], [6030, 2, 3]], 'period': 3, 'timeout': 18}
+    i.e. {'router_id': 2, 'input_ports': [6020, 6021], 'output_ports_metric_id': {6010: {'metric': 1, 'router_id': 1}, 6020: {...}}, 'period': 3, 'timeout': 18}
     """
     raw_config = read_config(file_name)
     config_data = parse_config(raw_config)
@@ -64,7 +64,7 @@ def parse_config(raw_config):
     Return: config_data
     a dictionary with 4 keys of router_id, input_ports, output_ports,
     timers
-    i.e. {'router_id': 2, 'input_ports': [6020, 6021], 'output_ports_metric_id': [[6010, 1, 1], [6030, 2, 3]], 'period': 3, 'timeout': 18}
+    i.e. {'router_id': 2, 'input_ports': [6020, 6021], 'output_ports_metric_id': {6010: {'metric': 1, 'router_id': 1}, 6020: {...}}, 'period': 3, 'timeout': 18}
     """
     try:
         # get router id
@@ -157,14 +157,15 @@ def parse_output_ports(raw_output_ports):
     Return: output_ports, output_ports_metric_id
     output_ports: a list of integers which are between 1024 and 64000
     i.e. [6010, 6030]
-    output_ports_metric_id: a nested list of lists which contains each
-    outputport with its metric and id. Metric > 0, 1 <= ID <= 64000
-    i.e. [[6010, 1, 1], [6030, 2, 3]]
+    output_ports_metric_id: a dict of dicts in which key is port number
+    and each sub dict contains key(port)'s metric and id.
+    Metric > 0, 1 <= ID <= 64000
+    i.e. {6010: {'metric': 1, 'router_id': 1}, 6020: {...}}
     """
     try:
         output_ports_combo_temp = raw_output_ports.split()[1:]
         output_ports = []
-        output_ports_metric_id = []
+        output_ports_metric_id = {}
         for port_combo_str in output_ports_combo_temp:
             port_combo_temp = port_combo_str.strip(',').split('-')
             port_int = int(port_combo_temp[0])
@@ -177,7 +178,9 @@ def parse_output_ports(raw_output_ports):
             if id_int < 1 or id_int > 64000:
                 raise ValueError("Output id is out of bounds")
             output_ports.append(port_int)
-            output_ports_metric_id.append([port_int, metric_int, id_int])
+            # output_ports_metric_id.append([port_int, metric_int, id_int])
+            output_ports_metric_id[port_int] = {'metric': metric_int,
+                                                'router_id': id_int}
         return output_ports, output_ports_metric_id
     except IndexError as e:
         print(e)
@@ -274,7 +277,7 @@ if __name__ == '__main__':
     print("parse_id passed the test")
     assert parse_input_ports('input-ports 6020, 6021') == [6020, 6021], "parse_input_ports failed the test"
     print("parse_input_ports passed the test")
-    assert parse_output_ports('output-ports 6010-1-1, 6030-2-3') == ([6010, 6030], [[6010, 1, 1], [6030, 2, 3]]),"parse_ouput_ports failed the test"
+    assert parse_output_ports('output-ports 6010-1-1, 6030-2-3') == ([6010, 6030], {6010: {'metric': 1, 'router_id': 1}, 6030: {'metric': 2, 'router_id': 3}}),"parse_ouput_ports failed the test"
     print("parse_output_ports passed the test")
     assert parse_period('period 3') == 3, "parse_period failed the test"
     print("parse_period passed the test")
@@ -296,7 +299,7 @@ if __name__ == '__main__':
     #    print(config_data)
     assert config_data['router_id'] == 2
     assert config_data['input_ports'] == [6020, 6021]
-    assert config_data['output_ports_metric_id'] == [[6010, 1, 1], [6030, 2, 3]]
+    assert config_data['output_ports_metric_id'] == {6010: {'metric': 1, 'router_id': 1}, 6030: {'metric': 2, 'router_id': 3}}
     assert config_data['period'] == 3
     assert config_data['timeout'] == 18
     print("parse_config passed the test")
@@ -305,10 +308,10 @@ if __name__ == '__main__':
     config_data = router_config("router2_config.txt")
     assert config_data['router_id'] == 2
     assert config_data['input_ports'] == [6020, 6021]
-    assert config_data['output_ports_metric_id'] == [[6010, 1, 1], [6030, 2, 3]]
+    assert config_data['output_ports_metric_id'] == {6010: {'metric': 1, 'router_id': 1}, 6030: {'metric': 2, 'router_id': 3}}
     assert config_data['period'] == 3
     assert config_data['timeout'] == 18
     print("config_data passed the test")
     print()
-    
+
     print("IO_parser passed all tests")
