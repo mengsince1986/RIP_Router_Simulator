@@ -33,7 +33,13 @@ def routing_table_formatter(router_id, table):
     for dest, rip_route in table.items():
         next_hop = rip_route.next_hop
         metric = rip_route.metric
-        timeout = int(time.time() - rip_route.timeout)
+
+        timeout = rip_route.timeout
+        if not (timeout is None):
+            timeout = int(time.time() - rip_route.timeout)
+            timeout_str = f'{timeout:^11.0f}'
+        else:
+            timeout_str = 5 * ' ' +  '-' + 5 * ' '
 
         garbage_collect_time = rip_route.garbage_collect_time
         if not (garbage_collect_time is None):
@@ -42,7 +48,7 @@ def routing_table_formatter(router_id, table):
         else:
             gc_str = 5 * ' ' +  '-' + 5 * ' '
         state = rip_route.state
-        content += f'|{dest:^10}|{next_hop:^10}|{metric:^12}|{timeout:^11.0f}|' +\
-            f'{gc_str}|{state:^11}|' + '\n' +\
+        content += f'|{dest:^10}|{next_hop:^10}|{metric:^12}|'+\
+            f'{timeout_str}|{gc_str}|{state:^11}|' + '\n' +\
             border + '\n'
     return header + content

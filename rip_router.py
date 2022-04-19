@@ -22,7 +22,7 @@ class Router:
     Create a new router object
     """
     INFINITY = 16
-    
+
     def __init__(self, router_id,
                  inputs, outputs,
                  period, timeout, garbage_collection_time=12):
@@ -116,7 +116,7 @@ class Router:
         state: 'active'(default)
         """
         # Create a new Route object to router itself
-        self_route = Route('-', 0, time.time())
+        self_route = Route('-', 0, None)
         self.__routing_table[self.__router_id] = self_route
 
 
@@ -128,10 +128,10 @@ class Router:
         in order to avoid synchronized update messages which can lead
         to unnecessary collisions on broadcast networks.
         """
-        offset = random.random() * self.__period
         while True:
             self.advertise_all_routes()
             self.print_routing_table()
+            offset = random.random() * self.__period
             time.sleep(self.__period + offset)
 
 
@@ -146,13 +146,14 @@ class Router:
         """
         try:
             ports_num = len(self.__output_ports)
-            if (ports_num < 1):
+            if ports_num < 1:
                 raise ValueError("No output port/socket available")
             for dest_port, metric_id in self.__output_ports.items():
-                # message = bytes(f'update from router {self.__router_id}, port {self.__input_ports[0]}', 'utf-8')
                 packet = self.update_packet()
                 self.__interface.send(packet, dest_port)
-                print(f"sends update packet to Router {metric_id['router_id']} [{dest_port}] at {time.ctime()}")
+                print("sends update packet to Router " +
+                     f"{metric_id['router_id']} " +
+                     f"[{dest_port}] at {time.ctime()}")
         except ValueError as error:
             print(error)
 
@@ -169,19 +170,6 @@ class Router:
         # Create RipEntries for all the routes
         entries = []
         for dest, route in self.__routing_table.items():
-            """
-            metric = None
-            if dest == self.__router_id:
-                # if the destination is the router itself,
-                # get the metric from the __outputs_ports by receiver_port
-                # instead of the route.metric which is always 0
-                for output_port, metric_id in self.__output_ports.items():
-                    # output format: {6010(port): {'metric': 2, 'router_id': 3}}
-                    if output_port == receiver_port:
-                        metric = metric_id['metric']
-            else:
-                metric = route.metric
-            """
             metric = route.metric
             entry = RipEntry(dest, metric)
             entries.append(entry)
@@ -258,43 +246,41 @@ class Router:
             # update the metric for each entry
             # by adding the metric to sender
             # metric = min(metric + metric_to_sender, 16(infinity))
-            updated_metric = min(entry.metric+metric_to_sender,
+            updated_metric = min(entry.metric + metric_to_sender,
                                  self.INFINITY)
             #if route to dest is unavailable in __routing_table
-            if not entry.dest in self.__routing_table.keys():
+            if updated_metric != self.INFINITY and\
+               not entry.dest in self.__routing_table.keys():
                 self.__routing_table[entry.dest] = \
                     Route(sender_id, updated_metric, time.time())
             else:
-                # if route to dest is available
-                pass
+                # TODO: Meng
+                # if route to dest is available in __routing_table
 
+                # 1. if packet is from the same router as
+                # existing router, reinitialize the timeout anyway
+                from_same_router = sender_id == \
+                   self.__routing_table[entry.dest].next_hop
+                if from_same_router:
+                    self.__routing_table[entry.dest].timeout = \
+                        time.time()
 
-
-    def new_route(self, entry, sender_id,  metric_to_sender):
-        """
-        add a new route to the routing table
-
-        parameters:
-        entry: the RipEntry object which contains the new route
-        metric_to_sender: the int metric to the sender
-
-        Return: router
-        new new Route object
-        """
-        # the metric to the new dest is equal to
-        # the metric from neighbour to dest +
-        # the metric to neighbour
-        metric = entry.metric + metric_to_sender
-        for neighbour in self.__output_ports.values():
-            # check if the destination is one of the neighbours
-            if neighbour['router_id'] == entry.dest:
-                # if the dest is our neighbor, no need to add
-                # additional metric
-                metric = entry.metric
-        route = Route(sender_id,
-                      metric,
-                      time.time())
-        return route
+                # 2. compare metrics
+                new_metric = updated_metric
+                old_metric = self.__routing_table[entry.dest].metric
+                have_differnt_metrics = new_metric != old_metric
+                is_lower_new_metric = new_metric < old_metric
+                
+                if from_same_router and have_differnt_metrics:
+                    self.__routing_table[entry.dest].metric = new_metric
+                    if new_metric == self.INFINITY:
+                        self.__routing_table[entry.dest].garbage_collect_time \
+                            = time.time()
+                        
+                if is_lower_new_metric:
+                    self.__routing_table[entry.dest].metric = new_metric
+                    self.__routing_table[entry.dest].next_hop = sender_id
+                    self.__routing_table[entry.dest].timeout = time.time()
 
 
     def __str__(self):

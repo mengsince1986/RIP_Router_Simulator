@@ -1,5 +1,5 @@
 router-id 1
-input-ports 6010
-output-ports 6020-1-2
+input-ports 6010, 6011
+output-ports 6020-3-2, 6040-3-4
 period 3
 timeout 18

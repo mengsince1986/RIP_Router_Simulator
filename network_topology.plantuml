@@ -1,8 +1,13 @@
 @startuml COSC364 RIP Network Topology
+left to right direction
+
 object Router_1
 object Router_2
 object Router_3
+object Router_4
 
-Router_1 "6010" -- "6020" Router_2 : 1
-Router_2 "6021"-- "6030" Router_3 : 2
+Router_1 "6010" --- "6020" Router_2 : 3
+Router_2 "6021" --- "6030" Router_3 : 2
+Router_4 "6040" --- "6011" Router_1 : 3
+Router_4 "6041" --- "6031" Router_3 : 1
 @enduml
