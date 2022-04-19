@@ -202,6 +202,7 @@ class Router:
         a separate thread from the main thread
         """
         while True:
+            # The __interface only listen to the input ports
             packets_list = self.__interface.receive()
             for raw_packet in packets_list:
                 self.process_received_packet(raw_packet)

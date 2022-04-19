@@ -56,7 +56,7 @@ class RipPacket:
         version = raw_packet[1]
         sender_id = (raw_packet[2] << 8) + raw_packet[3]
         entries_num = int(len(raw_packet[4:]) / cls.ENTRY_LEN)
-        #        print(f'command: {command}\nversion: {version}\nRouter ID: {sender_id}\nentries_num: {entries_num}')
+        # check header validity
         if not cls.is_valid_header(command, version, sender_id, entries_num):
             print("Broken packet:", "invalid header")
             return (False, sender_id)
@@ -66,10 +66,12 @@ class RipPacket:
         for i in range(4, len(raw_packet), cls.ENTRY_LEN):
             raw_entry = raw_packet[i:i+cls.ENTRY_LEN]
             entry = RipEntry.decode_enty(raw_entry)
+            # check entry validity
+            # invalid entry is represented as None
+            if entry is None:
+                print("Broken packet:", "invalid entry")
+                return (False, sender_id)
             entries.append(entry)
-        if None in entries:
-            print("Broken packet:", "invalid entry")
-            return (False, sender_id)
         rip_packet = RipPacket(entries, sender_id)
         return (True, rip_packet)
 

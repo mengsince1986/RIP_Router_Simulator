@@ -27,9 +27,9 @@ class Interface:
         """
         self.host = "127.0.0.1" # local host
         self.select_timeout = 0.5
-        self.ports = ports
+        self.ports = ports # input ports
         self.sending_port = ports[0] # set 1st port as the sending port
-        self.ports_sockets = {}
+        self.ports_sockets = {} # input ports and sockets
         self.init_sockets()
 
     def init_sockets(self):
