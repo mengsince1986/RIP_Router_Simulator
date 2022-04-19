@@ -21,7 +21,9 @@ class Router:
     """
     Create a new router object
     """
-    def __init__(self, router_id, inputs, outputs, period, timeout):
+    def __init__(self, router_id,
+                 inputs, outputs,
+                 period, timeout, garbage_collection_time=12):
         """
         the __* attributes are private attributes which can only be
         accessed by getter outside of class.
@@ -39,6 +41,7 @@ class Router:
         self.__output_ports = outputs
         self.__period = period
         self.__timeout = timeout
+        self.__garbage_collection_time = garbage_collection_time
         self.__interface = None
         self.__routing_table = {}
         # Initialisation
@@ -79,11 +82,40 @@ class Router:
     def set_timeout(self, new_timeout):
         self.__timeout = new_timeout
 
+    def get_interface(self):
+        return self.__interface
+
+    def get_routing_table(self):
+        return self.__routing_table
+
+
+    def print_routing_table(self):
+        """
+        # Done: Scott
+        Print the current self.__routing_table
+        """
+        print(routing_table_formatter(self.__router_id,
+                                      self.__routing_table))
+
+
     def init_interface(self, ports):
         self.__interface = Interface(ports)
 
-    def get_interface(self):
-        return self.__interface
+
+    def init_routing_table(self):
+        """
+        Initialise the __routing_table attribute
+
+        Route object format:
+        route.next_hop: 2,
+        route.metric: 1,
+        route.timer: 1234,
+        state(default): 'active'
+        """
+        # Create a new Route object to router itself
+        self_route = Route('-', 0, time.time())
+        self.__routing_table[self.__router_id] = self_route
+
 
     def advertise_all_routes_periodically(self):
         """
@@ -112,9 +144,8 @@ class Router:
         try:
             ports_num = len(self.__output_ports)
             if (ports_num < 1):
-                raise ValueError("There's no output port/socket available")
+                raise ValueError("No output port/socket available")
             for dest_port, metric_id in self.__output_ports.items():
-                # message id for test
                 # message = bytes(f'update from router {self.__router_id}, port {self.__input_ports[0]}', 'utf-8')
                 packet = self.update_packet(dest_port)
                 self.__interface.send(packet, dest_port)
@@ -160,6 +191,21 @@ class Router:
         Process the data of changed routes and convert it into a rip
         format packet for advertise_routes() method
         """
+        pass
+
+
+    def receive_routes(self):
+        """
+        Receive the routes update from neighbours (input ports)
+
+        The implementation is in a while loop and should be called with
+        a separate thread from the main thread
+        """
+        while True:
+            packets_list = self.__interface.receive()
+            for raw_packet in packets_list:
+                self.process_received_packet(raw_packet)
+
 
     def process_received_packet(self, raw_packet):
         """
@@ -183,33 +229,6 @@ class Router:
             # drop the packet
             print(f'Drop invalid packet from Router {rip_packet}')
 
-    def receive_routes(self):
-        """
-        Receive the routes update from neighbours (input ports)
-
-        The implementation is in a while loop and should be called with
-        a separate thread from the main thread
-        """
-        while True:
-            packets_list = self.__interface.receive()
-            for raw_packet in packets_list:
-                self.process_received_packet(raw_packet)
-
-
-    def init_routing_table(self):
-        """
-        Initialise the __routing_table attribute
-
-        Route object format:
-        route.next_hop: 2,
-        route.metric: 1,
-        route.timer: 1234,
-        state(default): 'active'
-        """
-        # Create a new Route object of to router itself
-        self_route = Route('-', 0, time.time())
-        self.__routing_table[self.__router_id] = self_route
-
 
     def update_routing_table(self, rip_packet):
         """
@@ -232,23 +251,8 @@ class Router:
         for entry in rip_packet.entries:
             #if route to dest is unavailable
             if not entry.dest in self.__routing_table.keys():
-                """
-                # the metric to the new dest is equal to
-                # the metric from neighbour to dest +
-                # the metric to neighbour
-                metric = entry.metric + metric_to_sender
-                for neighbour in self.__output_ports.values():
-                    # check if the destination is one of the neighbours
-                    if neighbour['router_id'] == entry.dest:
-                        # if the dest is our neighbor, no need to add
-                        # additional metric
-                        metric = entry.metric
-                new_route = Route(rip_packet.router_id,
-                                  metric,
-                                  time.time())
-                self.__routing_table[entry.dest] = new_route
-                """
-                self.adding_new_route(entry, sender_id, metric_to_sender)
+                self.__routing_table[entry.dest] = \
+                    self.new_route(entry, sender_id, metric_to_sender)
                 has_updated = True
             else:
                 # if route to dest is available
@@ -256,13 +260,16 @@ class Router:
         return has_updated
 
 
-    def adding_new_route(self, entry, sender_id,  metric_to_sender):
+    def new_route(self, entry, sender_id,  metric_to_sender):
         """
         add a new route to the routing table
 
         parameters:
         entry: the RipEntry object which contains the new route
         metric_to_sender: the int metric to the sender
+
+        Return: router
+        new new Route object
         """
         # the metric to the new dest is equal to
         # the metric from neighbour to dest +
@@ -274,23 +281,13 @@ class Router:
                 # if the dest is our neighbor, no need to add
                 # additional metric
                 metric = entry.metric
-        new_route = Route(sender_id,
+        route = Route(sender_id,
                           metric,
                           time.time())
-        self.__routing_table[entry.dest] = new_route
+        return route
 
 
-    def get_routing_table(self):
-        return self.__routing_table
 
-
-    def print_routing_table(self):
-        """
-        # Done: Scott
-        Print the current self.__routing_table
-        """
-        print(routing_table_formatter(self.__router_id,
-                                      self.__routing_table))
 
 
     def __str__(self):
