@@ -12,7 +12,7 @@ import random
 from network_interface import Interface
 from forwarding_route import Route
 from rip_packet import RipPacket, RipEntry
-from IO_formatter import *
+from IO_formatter import routing_table_formatter
 ###############################################################################
 #                                 Router Class                                #
 ###############################################################################
@@ -254,33 +254,43 @@ class Router:
                 self.__routing_table[entry.dest] = \
                     Route(sender_id, updated_metric, time.time())
             else:
-                # TODO: Meng
-                # if route to dest is available in __routing_table
+                self.update_availabe_route(entry,
+                                           updated_metric,
+                                           sender_id)
 
-                # 1. if packet is from the same router as
-                # existing router, reinitialize the timeout anyway
-                from_same_router = sender_id == \
-                   self.__routing_table[entry.dest].next_hop
-                if from_same_router:
-                    self.__routing_table[entry.dest].timeout = \
-                        time.time()
 
-                # 2. compare metrics
-                new_metric = updated_metric
-                old_metric = self.__routing_table[entry.dest].metric
-                have_differnt_metrics = new_metric != old_metric
-                is_lower_new_metric = new_metric < old_metric
-                
-                if from_same_router and have_differnt_metrics:
-                    self.__routing_table[entry.dest].metric = new_metric
-                    if new_metric == self.INFINITY:
-                        self.__routing_table[entry.dest].garbage_collect_time \
-                            = time.time()
-                        
-                if is_lower_new_metric:
-                    self.__routing_table[entry.dest].metric = new_metric
-                    self.__routing_table[entry.dest].next_hop = sender_id
-                    self.__routing_table[entry.dest].timeout = time.time()
+    def update_availabe_route(self, entry, updated_metric, sender_id):
+        """
+        Parameters:
+        entry: a RipEntry object
+        sender_id: the router id from which the entry is sent
+        """
+        # TODO: triggered update by Meng
+        # if route to dest is available in __routing_table
+
+        # 1. if packet is from the same router as
+        # existing router, reinitialize the timeout anyway
+        from_same_router = sender_id == \
+            self.__routing_table[entry.dest].next_hop
+        if from_same_router:
+            self.__routing_table[entry.dest].timeout = time.time()
+
+        # 2. compare metrics
+        new_metric = updated_metric
+        old_metric = self.__routing_table[entry.dest].metric
+        have_differnt_metrics = new_metric != old_metric
+        is_lower_new_metric = new_metric < old_metric
+
+        if from_same_router and have_differnt_metrics:
+            self.__routing_table[entry.dest].metric = new_metric
+            if new_metric == self.INFINITY:
+                self.__routing_table[entry.dest].garbage_collect_time \
+                    = time.time()
+
+        if is_lower_new_metric:
+            self.__routing_table[entry.dest].metric = new_metric
+            self.__routing_table[entry.dest].next_hop = sender_id
+            self.__routing_table[entry.dest].timeout = time.time()
 
 
     def __str__(self):
