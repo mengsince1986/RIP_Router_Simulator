@@ -51,4 +51,3 @@ if __name__ == "__main__":
     while True:
         ROUTER.receive_routes()
         ROUTER.advertise_all_routes_periodically()
-    
