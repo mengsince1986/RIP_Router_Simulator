@@ -26,7 +26,7 @@ class Interface:
         ports: a list of integers of port number
         """
         self.host = "127.0.0.1" # local host
-        self.select_timeout = 0.5
+        self.select_timeout = 1 # default 0.5
         self.ports = ports # input ports
         self.sending_port = ports[0] # set 1st port as the sending port
         self.ports_sockets = {} # input ports and sockets
@@ -71,6 +71,7 @@ class Interface:
         for input_socket in self.ports_sockets.values():
             sockets.append(input_socket)
         sockets_to_read = (select.select(sockets, [], [], self.select_timeout))[0]
+
         # port = []
         data_list = []
         for socket_to_read in sockets_to_read:

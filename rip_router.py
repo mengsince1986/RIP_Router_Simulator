@@ -22,6 +22,7 @@ class Router:
     Create a new router object
     """
     INFINITY = 16
+    TIMER_OFFSET = 2.5
 
     def __init__(self, router_id,
                  inputs, outputs,
@@ -41,6 +42,7 @@ class Router:
         self.__router_id = router_id
         self.__input_ports = inputs
         self.__output_ports = outputs
+        self.__advertise_timer = time.time()
         self.__period = period
         self.__timeout = timeout
         self.__garbage_collection_time = garbage_collection_time
@@ -49,6 +51,7 @@ class Router:
         # Initialisation
         self.init_interface(inputs)
         self.init_routing_table()
+        self.random_timer()
 
     def get_router_id(self):
         """
@@ -100,6 +103,15 @@ class Router:
                                       self.__routing_table))
 
 
+    def random_timer(self):
+        """
+        randomize self.__period +- TIMER_OFFSET, and convert to 2 decimal places
+        """
+        self.__period = self.__period +\
+            random.uniform(-self.TIMER_OFFSET, +self.TIMER_OFFSET)
+        print(f"Random Router period to {self.__period:.2f}")
+
+
     def init_interface(self, ports):
         self.__interface = Interface(ports)
 
@@ -128,11 +140,18 @@ class Router:
         in order to avoid synchronized update messages which can lead
         to unnecessary collisions on broadcast networks.
         """
+        """
         while True:
             self.advertise_all_routes()
             self.print_routing_table()
             offset = random.random() * self.__period
             time.sleep(self.__period + offset)
+        """
+        now = time.time()
+        if now - self.__advertise_timer >= self.__period:
+            self.advertise_all_routes()
+            self.print_routing_table()
+            self.__advertise_timer = now
 
 
     def advertise_all_routes(self):
@@ -194,11 +213,18 @@ class Router:
         The implementation is in a while loop and should be called with
         a separate thread from the main thread
         """
+        """
         while True:
             # The __interface only listen to the input ports
             packets_list = self.__interface.receive()
             for raw_packet in packets_list:
                 self.process_received_packet(raw_packet)
+        """
+        # The __interface only listen to the input ports
+        # print(f"Listening to ports at {time.ctime()}")
+        packets_list = self.__interface.receive()
+        for raw_packet in packets_list:
+            self.process_received_packet(raw_packet)
 
 
     def process_received_packet(self, raw_packet):

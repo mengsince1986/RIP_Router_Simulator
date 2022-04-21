@@ -35,6 +35,8 @@ if __name__ == "__main__":
 
     # Initialise router with interface (sockets binding)
     ROUTER = rip_router_init(config_file_name)
+
+    """
     # Receive from input ports in a new thread
     receiver_thread = threading.Thread(target=ROUTER.receive_routes)
     receiver_thread.start()
@@ -45,3 +47,8 @@ if __name__ == "__main__":
     # Join threads
     #    receiver_thread.join()
     #    advertiser_thread.join()
+    """
+    while True:
+        ROUTER.receive_routes()
+        ROUTER.advertise_all_routes_periodically()
+    
