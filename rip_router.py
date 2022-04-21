@@ -41,6 +41,7 @@ class Router:
         """
         # Instance attributes
         self.__router_id = router_id
+        self.__split_horizon_poison_reverse = True
         self.__input_ports = inputs
         self.__output_ports = outputs
         self.__advertise_timer = time.time()
@@ -172,7 +173,7 @@ class Router:
             if ports_num < 1:
                 raise ValueError("No output port/socket available")
             for dest_port, metric_id in self.__output_ports.items():
-                packet = self.update_packet()
+                packet = self.update_packet(metric_id['router_id'])
                 self.__interface.send(packet, dest_port)
                 current_time = datetime.now().strftime('%H:%M:%S.%f')[:-4]
                 print("sends update packet to Router " +
@@ -182,7 +183,7 @@ class Router:
             print(error)
 
 
-    def update_packet(self):
+    def update_packet(self, receiver_id):
         """
         # Done: Meng
         parameter:
@@ -195,6 +196,9 @@ class Router:
         entries = []
         for dest, route in self.__routing_table.items():
             metric = route.metric
+            if self.__split_horizon_poison_reverse and\
+               route.next_hop == receiver_id:
+                metric = self.INFINITY
             entry = RipEntry(dest, metric)
             entries.append(entry)
         # Create RipPacket
