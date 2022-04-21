@@ -27,7 +27,7 @@ class Router:
 
     def __init__(self, router_id,
                  inputs, outputs,
-                 period, timeout, garbage_collection_time=12):
+                 period, timeout):
         """
         the __* attributes are private attributes which can only be
         accessed by getter outside of class.
@@ -46,8 +46,9 @@ class Router:
         self.__advertise_timer = time.time()
         self.__default_period = period
         self.__period = period
+        self.__timeout_check_timer = time.time()
         self.__timeout = timeout
-        self.__garbage_collection_time = garbage_collection_time
+        self.__garbage_collection_time = period * 4
         self.__interface = None
         self.__routing_table = {}
         # Initialisation
@@ -61,33 +62,33 @@ class Router:
         """
         return self.__router_id
 
-    def set_router_id(self, new_id):
-        self.__router_id = new_id
+#    def set_router_id(self, new_id):
+#        self.__router_id = new_id
 
     def get_input_ports(self):
         return self.__input_ports
 
-    def set_input_ports(self, new_inputs):
-        self.__input_ports = new_inputs
-        self.init_interface(new_inputs)
+#    def set_input_ports(self, new_inputs):
+#        self.__input_ports = new_inputs
+#        self.init_interface(new_inputs)
 
     def get_output_ports(self):
         return self.__output_ports
 
-    def set_output_ports(self, new_outputs):
-        self.__output_ports = new_outputs
+#    def set_output_ports(self, new_outputs):
+#        self.__output_ports = new_outputs
 
     def get_period(self):
         return self.__period
 
-    def set_period(self, new_period):
-        self.__period = new_period
+#    def set_period(self, new_period):
+#        self.__period = new_period
 
     def get_timeout(self):
         return self.__timeout
 
-    def set_timeout(self, new_timeout):
-        self.__timeout = new_timeout
+#    def set_timeout(self, new_timeout):
+#        self.__timeout = new_timeout
 
     def get_interface(self):
         return self.__interface
@@ -283,7 +284,7 @@ class Router:
                not entry.dest in self.__routing_table.keys():
                 self.__routing_table[entry.dest] = \
                     Route(sender_id, updated_metric, time.time())
-            else:
+            elif entry.dest in self.__routing_table:
                 self.update_availabe_route(entry,
                                            updated_metric,
                                            sender_id)
@@ -310,17 +311,63 @@ class Router:
         old_metric = self.__routing_table[entry.dest].metric
         have_differnt_metrics = new_metric != old_metric
         is_lower_new_metric = new_metric < old_metric
+        is_almost_timeout = \
+            not self.__routing_table[entry.dest].timeout is None and\
+            (time.time() - self.__routing_table[entry.dest].timeout)\
+            >= self.__timeout / 2
+#        is_available_route = entry.dest in self.__routing_table
 
         if from_same_router and have_differnt_metrics:
             self.__routing_table[entry.dest].metric = new_metric
             if new_metric == self.INFINITY:
                 self.__routing_table[entry.dest].garbage_collect_time \
                     = time.time()
-
-        if is_lower_new_metric:
+                self.__routing_table[entry.dest].state = 'updated'
+        elif is_lower_new_metric:
             self.__routing_table[entry.dest].metric = new_metric
             self.__routing_table[entry.dest].next_hop = sender_id
             self.__routing_table[entry.dest].timeout = time.time()
+        elif not have_differnt_metrics and is_almost_timeout:
+            self.__routing_table[entry.dest].next_hop = sender_id
+            self.__routing_table[entry.dest].timeout = time.time()
+
+
+    def check_timeout_entries_periodically(self):
+        """
+        call check_timeout_entries() every default_period
+        """
+        now = time.time()
+        if now - self.__timeout_check_timer >= self.__default_period:
+            self.check_timeout_entries()
+            self.__timeout_check_timer = now
+
+
+    def check_timeout_entries(self):
+        """
+        Check the timeout of each entry in __routing_table
+
+        if an entry is timeout, start its garbage_collect_time
+        """
+        current_time = datetime.now().strftime('%H:%M:%S.%f')[:-4]
+        print(f"Checking timeout entries at {current_time}")
+
+        entries_to_remove = []
+        for dest_id, entry in self.__routing_table.items():
+            if not entry.timeout is None and \
+               entry.garbage_collect_time is None and \
+               time.time() - entry.timeout >= self.__timeout:
+                entry.garbage_collect_time = time.time()
+                entry.state = 'dying'
+                self.print_routing_table()
+            elif not entry.garbage_collect_time is None and \
+                 (time.time() - entry.garbage_collect_time) \
+                 >= self.__garbage_collection_time:
+                entries_to_remove.append(dest_id)
+
+        for dest_id in entries_to_remove:
+            self.__routing_table.pop(dest_id)
+            print(f"Removed timeout route to {dest_id}")
+            self.print_routing_table()
 
 
     def __str__(self):
