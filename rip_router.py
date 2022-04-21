@@ -9,6 +9,7 @@ File: rip_router.py
 ###############################################################################
 import time
 import random
+from datetime import datetime
 from network_interface import Interface
 from forwarding_route import Route
 from rip_packet import RipPacket, RipEntry
@@ -22,7 +23,7 @@ class Router:
     Create a new router object
     """
     INFINITY = 16
-    TIMER_OFFSET = 2.5
+    TIMER_OFFSET = 1.0
 
     def __init__(self, router_id,
                  inputs, outputs,
@@ -43,6 +44,7 @@ class Router:
         self.__input_ports = inputs
         self.__output_ports = outputs
         self.__advertise_timer = time.time()
+        self.__default_period = period
         self.__period = period
         self.__timeout = timeout
         self.__garbage_collection_time = garbage_collection_time
@@ -51,7 +53,7 @@ class Router:
         # Initialisation
         self.init_interface(inputs)
         self.init_routing_table()
-        self.random_timer()
+        self.random_offset_period()
 
     def get_router_id(self):
         """
@@ -103,13 +105,13 @@ class Router:
                                       self.__routing_table))
 
 
-    def random_timer(self):
+    def random_offset_period(self):
         """
         randomize self.__period +- TIMER_OFFSET, and convert to 2 decimal places
         """
-        self.__period = self.__period +\
+        self.__period = self.__default_period +\
             random.uniform(-self.TIMER_OFFSET, +self.TIMER_OFFSET)
-        print(f"Random Router period to {self.__period:.2f}")
+        print(f"Set Router update period to {self.__period:.2f}")
 
 
     def init_interface(self, ports):
@@ -152,6 +154,7 @@ class Router:
             self.advertise_all_routes()
             self.print_routing_table()
             self.__advertise_timer = now
+            self.random_offset_period()
 
 
     def advertise_all_routes(self):
@@ -170,9 +173,10 @@ class Router:
             for dest_port, metric_id in self.__output_ports.items():
                 packet = self.update_packet()
                 self.__interface.send(packet, dest_port)
+                current_time = datetime.now().strftime('%H:%M:%S.%f')[:-4]
                 print("sends update packet to Router " +
                      f"{metric_id['router_id']} " +
-                     f"[{dest_port}] at {time.ctime()}")
+                     f"[{dest_port}] at {current_time}")
         except ValueError as error:
             print(error)
 

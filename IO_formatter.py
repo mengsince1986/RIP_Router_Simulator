@@ -64,8 +64,8 @@ def table_content_formatter(table):
 
         timeout = rip_route.timeout
         if not timeout is None:
-            timeout = int(time.time() - rip_route.timeout)
-            timeout_str = f'{timeout:^11.0f}'
+            timeout = round(time.time() - rip_route.timeout, 2)
+            timeout_str = f'{timeout:^11.1f}'
         else:
             timeout_str = 5 * ' ' +  '-' + 5 * ' '
 
