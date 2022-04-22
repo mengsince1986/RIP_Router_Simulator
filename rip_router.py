@@ -174,6 +174,7 @@ class Router:
         now = time.time()
         if now - self.__advertise_updates_timer >= \
            self.__triggered_updates_period:
+            print("Into advetise_updated_routes!!!")
             self.advertise_routes('update')
             self.print_routing_table()
             self.__advertise_updates_timer = now
@@ -224,9 +225,12 @@ class Router:
         # Create RipEntries for all the routes
         entries = []
         for dest, route in self.__routing_table.items():
+            if mode == 'update':
+                print("update_packet() mode is update!!!")
             if (mode == 'all') or \
                (mode == 'update' and (route.state == 'update' or \
                                       route.state == 'dying')):
+                print("update_packet(update) starts!!!")
                 metric = route.metric
                 # split_horizon_poison_reverse
                 if self.__split_horizon_poison_reverse and\
@@ -239,6 +243,8 @@ class Router:
                     route.state = 'active'
         # Create RipPacket
         if len(entries) < 1:
+            if mode == 'update':
+                print("Failled update_packet() in mode update!!!")
             return None
         packet = RipPacket(entries, self.__router_id)
         packet_bytes = packet.packet_bytes()
@@ -349,10 +355,7 @@ class Router:
             None
         if from_same_router:
             self.__routing_table[entry.dest].timeout = time.time()
-            if is_timeout:
-                self.__routing_table[entry.dest].garbage_collect_time \
-                    = None
-                self.__routing_table[entry.dest].state = 'active'
+
 
         # 2. compare metrics
         new_metric = updated_metric
@@ -360,8 +363,9 @@ class Router:
         have_differnt_metrics = new_metric != old_metric
         is_lower_new_metric = new_metric < old_metric
         is_almost_timeout = \
-            not self.__routing_table[entry.dest].timeout is None and\
-            (time.time() - self.__routing_table[entry.dest].timeout)\
+            not self.__routing_table[entry.dest].timeout is None and \
+            not is_timeout and \
+            (time.time() - self.__routing_table[entry.dest].timeout) \
             >= self.__timeout / 2
 
         if from_same_router and have_differnt_metrics:
@@ -369,6 +373,10 @@ class Router:
             if not is_timeout and new_metric == self.INFINITY:
                 self.__routing_table[entry.dest].garbage_collect_time \
                     = time.time()
+            elif is_timeout:
+                self.__routing_table[entry.dest].garbage_collect_time \
+                    = None
+                self.__routing_table[entry.dest].state = 'active'
             # TODO: Triggered update
             self.__routing_table[entry.dest].state = 'updated'
             self.advertise_updated_routes()
@@ -383,15 +391,17 @@ class Router:
             # TODO: Triggered update
             self.__routing_table[entry.dest].state = 'updated'
             self.advertise_updated_routes()
-        elif not have_differnt_metrics and is_almost_timeout:
+        elif not from_same_router and \
+             not have_differnt_metrics and \
+             not is_timeout and is_almost_timeout:
             self.__routing_table[entry.dest].next_hop = sender_id
             self.__routing_table[entry.dest].timeout = time.time()
-            if is_timeout:
-                self.__routing_table[entry.dest].garbage_collect_time \
-                    = None
+            # if is_timeout:
+            #    self.__routing_table[entry.dest].garbage_collect_time \
+            #        = None
             # TODO: Triggered update
-            self.__routing_table[entry.dest].state = 'updated'
-            self.advertise_updated_routes()            
+            #self.__routing_table[entry.dest].state = 'updated'
+            #self.advertise_updated_routes()
 
     #----------------------------------------
     # Above is receiving part
@@ -426,8 +436,13 @@ class Router:
                 # TODO: Triggered update
                 entry.state = 'dying'
                 self.advertise_updated_routes()
+                print("dying update request!!!!")
                 self.print_routing_table()
-            elif not entry.garbage_collect_time is None and \
+            elif entry.metric >= self.INFINITY:
+                entry.state = 'dying'
+                if entry.garbage_collect_time is None:
+                    entry.garbage_collect_time = time.time()
+            if not entry.garbage_collect_time is None and \
                  (time.time() - entry.garbage_collect_time) \
                  >= self.__garbage_collection_time:
                 entries_to_remove.append(dest_id)
