@@ -48,6 +48,12 @@ if __name__ == "__main__":
     #    receiver_thread.join()
     #    advertiser_thread.join()
     """
+    # Immediately advertise itself
+    ROUTER.advertise_routes('all')
+    ROUTER.print_routing_table()
+    ROUTER.random_offset_period()
+
+    # Start loop
     while True:
         ROUTER.receive_routes()
         ROUTER.advertise_all_routes_periodically()

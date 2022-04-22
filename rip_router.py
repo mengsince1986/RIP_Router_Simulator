@@ -44,7 +44,9 @@ class Router:
         self.__split_horizon_poison_reverse = True
         self.__input_ports = inputs
         self.__output_ports = outputs
-        self.__advertise_timer = time.time()
+        self.__advertise_all_timer = time.time()
+        self.__advertise_updates_timer = time.time()
+        self.__triggered_updates_period = 1
         self.__default_period = period
         self.__period = period
         self.__timeout_check_timer = time.time()
@@ -157,16 +159,32 @@ class Router:
             time.sleep(self.__period + offset)
         """
         now = time.time()
-        if now - self.__advertise_timer >= self.__period:
-            self.advertise_all_routes()
+        if now - self.__advertise_all_timer >= self.__period:
+            self.advertise_routes('all')
             self.print_routing_table()
-            self.__advertise_timer = now
+            self.__advertise_all_timer = now
             self.random_offset_period()
 
 
-    def advertise_all_routes(self):
+    def advertise_updated_routes(self):
+        """
+        get the routing table entries flagged(state) with update
+        and advertise the updated routes to all neighbours
+        """
+        now = time.time()
+        if now - self.__advertise_updates_timer >= \
+           self.__triggered_updates_period:
+            self.advertise_routes('update')
+            self.print_routing_table()
+            self.__advertise_updates_timer = now
+
+
+    def advertise_routes(self, mode):
         """
         # TODO: Meng
+
+        parameter:
+        mode: a string 'all' / 'update'
         get the latest advertising rip packet from
         update_packet() & triggered_packet() methods and
         advertise the packet to all the neighbours (ouput ports)
@@ -178,26 +196,23 @@ class Router:
             if ports_num < 1:
                 raise ValueError("No output port/socket available")
             for dest_port, metric_id in self.__output_ports.items():
-                packet = self.update_packet(metric_id['router_id'])
+                packet = self.update_packet(metric_id['router_id'], mode)
+                if packet is None:
+                    return
                 self.__interface.send(packet, dest_port)
                 current_time = datetime.now().strftime('%H:%M:%S.%f')[:-4]
-                print("sends update packet to Router " +
+                if mode == 'all':
+                    message = "Sends all routes to Router"
+                else:
+                    message = 'Sends updated routes to Router'
+                print(message +
                      f"{metric_id['router_id']} " +
                      f"[{dest_port}] at {current_time}")
         except ValueError as error:
             print(error)
 
 
-    def advertise_updated_routes(self):
-        """
-        # TODO: Meng
-        get the routing table entries flagged(state) with update
-        and advertise the updated routes to all neighbours
-        """
-        pass
-
-
-    def update_packet(self, receiver_id):
+    def update_packet(self, receiver_id, mode):
         """
         # Done: Meng
         parameter:
@@ -209,27 +224,25 @@ class Router:
         # Create RipEntries for all the routes
         entries = []
         for dest, route in self.__routing_table.items():
-            metric = route.metric
-            # split_horizon_poison_reverse
-            if self.__split_horizon_poison_reverse and\
-               route.next_hop == receiver_id:
-                metric = self.INFINITY
-            entry = RipEntry(dest, metric)
-            entries.append(entry)
+            if (mode == 'all') or \
+               (mode == 'update' and (route.state == 'update' or \
+                                      route.state == 'dying')):
+                metric = route.metric
+                # split_horizon_poison_reverse
+                if self.__split_horizon_poison_reverse and\
+                   route.next_hop == receiver_id:
+                    metric = self.INFINITY
+                entry = RipEntry(dest, metric)
+                entries.append(entry)
+                # Clear updated flags
+                if route.state != 'dying':
+                    route.state = 'active'
         # Create RipPacket
+        if len(entries) < 1:
+            return None
         packet = RipPacket(entries, self.__router_id)
         packet_bytes = packet.packet_bytes()
         return packet_bytes
-
-
-    def triggered_packet(self, updated_routes):
-        """
-        # TODO: To be removed
-        Process the data of changed routes and convert it into a rip
-        format packet for advertise_routes() method
-        """
-        pass
-
 
     #----------------------------------------
     # Above is sending part
@@ -309,6 +322,9 @@ class Router:
                not entry.dest in self.__routing_table.keys():
                 self.__routing_table[entry.dest] = \
                     Route(sender_id, updated_metric, time.time())
+                # TODO:  Triggered update
+                self.__routing_table[entry.dest].state = 'updated'
+                self.advertise_updated_routes()
             elif entry.dest in self.__routing_table:
                 self.update_availabe_route(entry,
                                            updated_metric,
@@ -328,8 +344,15 @@ class Router:
         # existing router, reinitialize the timeout anyway
         from_same_router = sender_id == \
             self.__routing_table[entry.dest].next_hop
+        is_timeout = not \
+            self.__routing_table[entry.dest].garbage_collect_time is \
+            None
         if from_same_router:
             self.__routing_table[entry.dest].timeout = time.time()
+            if is_timeout:
+                self.__routing_table[entry.dest].garbage_collect_time \
+                    = None
+                self.__routing_table[entry.dest].state = 'active'
 
         # 2. compare metrics
         new_metric = updated_metric
@@ -343,18 +366,32 @@ class Router:
 
         if from_same_router and have_differnt_metrics:
             self.__routing_table[entry.dest].metric = new_metric
-            if new_metric == self.INFINITY:
+            if not is_timeout and new_metric == self.INFINITY:
                 self.__routing_table[entry.dest].garbage_collect_time \
                     = time.time()
             # TODO: Triggered update
             self.__routing_table[entry.dest].state = 'updated'
+            self.advertise_updated_routes()
         elif is_lower_new_metric:
             self.__routing_table[entry.dest].metric = new_metric
             self.__routing_table[entry.dest].next_hop = sender_id
             self.__routing_table[entry.dest].timeout = time.time()
+            if is_timeout:
+                self.__routing_table[entry.dest].garbage_collect_time \
+                    = None
+                self.__routing_table[entry.dest].state = 'active'
+            # TODO: Triggered update
+            self.__routing_table[entry.dest].state = 'updated'
+            self.advertise_updated_routes()
         elif not have_differnt_metrics and is_almost_timeout:
             self.__routing_table[entry.dest].next_hop = sender_id
             self.__routing_table[entry.dest].timeout = time.time()
+            if is_timeout:
+                self.__routing_table[entry.dest].garbage_collect_time \
+                    = None
+            # TODO: Triggered update
+            self.__routing_table[entry.dest].state = 'updated'
+            self.advertise_updated_routes()            
 
     #----------------------------------------
     # Above is receiving part
@@ -385,7 +422,10 @@ class Router:
                entry.garbage_collect_time is None and \
                time.time() - entry.timeout >= self.__timeout:
                 entry.garbage_collect_time = time.time()
+                entry.metric = self.INFINITY
+                # TODO: Triggered update
                 entry.state = 'dying'
+                self.advertise_updated_routes()
                 self.print_routing_table()
             elif not entry.garbage_collect_time is None and \
                  (time.time() - entry.garbage_collect_time) \

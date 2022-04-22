@@ -116,9 +116,17 @@ class RipPacket:
         check if a packet is valid
         """
         is_valid_command = command == 2
+        if (not is_valid_command):
+            print(f"invalid header command: {command}")
         is_valid_version = version == 2
+        if (not is_valid_version):
+            print(f"invalid header version: {version}")
         is_valid_id = 1 <= router_id <= 64000
+        if (not is_valid_id):
+            print(f"invalid header id: {router_id}")
         is_valid_entries_num = 1 <= entries_num <= 25
+        if (not is_valid_entries_num):
+            print(f"invalid header entries num: {entries_num}")
         return is_valid_command and\
                is_valid_version and\
                is_valid_id and\
