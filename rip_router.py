@@ -136,6 +136,11 @@ class Router:
         self.__routing_table[self.__router_id] = self_route
 
 
+    #------------------------------------------------------
+    # Init part above
+    #------------------------------------------------------
+
+
     def advertise_all_routes_periodically(self):
         """
         Call advertise_all_routes() periodcally by self.__period
@@ -183,6 +188,15 @@ class Router:
             print(error)
 
 
+    def advertise_updated_routes(self):
+        """
+        # TODO: Meng
+        get the routing table entries flagged(state) with update
+        and advertise the updated routes to all neighbours
+        """
+        pass
+
+
     def update_packet(self, receiver_id):
         """
         # Done: Meng
@@ -196,6 +210,7 @@ class Router:
         entries = []
         for dest, route in self.__routing_table.items():
             metric = route.metric
+            # split_horizon_poison_reverse
             if self.__split_horizon_poison_reverse and\
                route.next_hop == receiver_id:
                 metric = self.INFINITY
@@ -206,13 +221,19 @@ class Router:
         packet_bytes = packet.packet_bytes()
         return packet_bytes
 
+
     def triggered_packet(self, updated_routes):
         """
-        # TODO: Scott
+        # TODO: To be removed
         Process the data of changed routes and convert it into a rip
         format packet for advertise_routes() method
         """
         pass
+
+
+    #----------------------------------------
+    # Above is sending part
+    #----------------------------------------
 
 
     def receive_routes(self):
@@ -319,14 +340,14 @@ class Router:
             not self.__routing_table[entry.dest].timeout is None and\
             (time.time() - self.__routing_table[entry.dest].timeout)\
             >= self.__timeout / 2
-#        is_available_route = entry.dest in self.__routing_table
 
         if from_same_router and have_differnt_metrics:
             self.__routing_table[entry.dest].metric = new_metric
             if new_metric == self.INFINITY:
                 self.__routing_table[entry.dest].garbage_collect_time \
                     = time.time()
-                self.__routing_table[entry.dest].state = 'updated'
+            # TODO: Triggered update
+            self.__routing_table[entry.dest].state = 'updated'
         elif is_lower_new_metric:
             self.__routing_table[entry.dest].metric = new_metric
             self.__routing_table[entry.dest].next_hop = sender_id
@@ -335,6 +356,9 @@ class Router:
             self.__routing_table[entry.dest].next_hop = sender_id
             self.__routing_table[entry.dest].timeout = time.time()
 
+    #----------------------------------------
+    # Above is receiving part
+    #----------------------------------------
 
     def check_timeout_entries_periodically(self):
         """
@@ -373,6 +397,10 @@ class Router:
             print(f"Removed timeout route to {dest_id}")
             self.print_routing_table()
 
+
+    #----------------------------------------
+    # Above is timeout and garbage_collection part
+    #----------------------------------------
 
     def __str__(self):
         return ("Router: {0}\n"
