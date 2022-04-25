@@ -5,9 +5,17 @@ object Router_1
 object Router_2
 object Router_3
 object Router_4
+object Router_5
+object Router_6
+object Router_7
 
-Router_1 "6010" --- "6020" Router_2 : 3
-Router_2 "6021" --- "6030" Router_3 : 2
-Router_4 "6040" --- "6011" Router_1 : 3
-Router_4 "6041" --- "6031" Router_3 : 1
+Router_1 "6010" --- "6020" Router_2 : 1
+Router_2 "6021" --- "6030" Router_3 : 3
+Router_3 "6031" --- "6040" Router_4 : 4
+Router_4 "6041" --- "6050" Router_5 : 2
+Router_4 "6042" --- "6070" Router_7 : 6
+Router_5 "6051" --- "6060" Router_6 : 1
+Router_6 "6061" --- "6011" Router_1 : 5
+Router_7 "6071" --- "6012" Router_1 : 8
+
 @enduml

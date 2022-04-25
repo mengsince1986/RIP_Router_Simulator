@@ -4,9 +4,9 @@ Authors: MENG ZHANG (71682325), ZHENG CHAO
 File: rip_router.py
 """
 
-###############################################################################
-#                                Import Modules                               #
-###############################################################################
+#######################################################################
+#                                Import Modules                       #
+#######################################################################
 import time
 import random
 from datetime import datetime
@@ -14,14 +14,16 @@ from network_interface import Interface
 from forwarding_route import Route
 from rip_packet import RipPacket, RipEntry
 from IO_formatter import routing_table_formatter
-###############################################################################
-#                                 Router Class                                #
-###############################################################################
+#######################################################################
+#                                 Router Class                        #
+#######################################################################
 
 class Router:
     """
     Create a new router object
     """
+
+    # Class attributes
     INFINITY = 16
     REGULAR_TIMER_OFFSET = 1.0
 
@@ -60,50 +62,94 @@ class Router:
         self.init_routing_table()
         self.random_offset_period()
 
+
     def get_router_id(self):
         """
         router_id getter
         """
         return self.__router_id
 
-#    def set_router_id(self, new_id):
-#        self.__router_id = new_id
+
+    def set_router_id(self, new_id):
+        """
+        router_id setter
+        """
+        self.__router_id = new_id
+
 
     def get_input_ports(self):
+        """
+        router input_ports getter
+        """
         return self.__input_ports
 
-#    def set_input_ports(self, new_inputs):
-#        self.__input_ports = new_inputs
-#        self.init_interface(new_inputs)
+
+    def set_input_ports(self, new_inputs):
+        """
+        router input_ports setter
+        """
+        self.__input_ports = new_inputs
+        self.init_interface(new_inputs)
+
 
     def get_output_ports(self):
+        """
+        router output_ports getter
+        """
         return self.__output_ports
 
-#    def set_output_ports(self, new_outputs):
-#        self.__output_ports = new_outputs
+
+    def set_output_ports(self, new_outputs):
+        """
+        router output_ports setter
+        """
+        self.__output_ports = new_outputs
+
 
     def get_period(self):
+        """
+        router period getter
+        """
         return self.__period
 
-#    def set_period(self, new_period):
-#        self.__period = new_period
+
+    def set_period(self, new_period):
+        """
+        router period setter
+        """
+        self.__period = new_period
+
 
     def get_timeout(self):
+        """
+        router timeout getter
+        """
         return self.__timeout
 
-#    def set_timeout(self, new_timeout):
-#        self.__timeout = new_timeout
+
+    def set_timeout(self, new_timeout):
+        """
+        router timout setter
+        """
+        self.__timeout = new_timeout
+
 
     def get_interface(self):
+        """
+        router interface getter
+        """
         return self.__interface
 
+
     def get_routing_table(self):
+        """
+        router routing_table getter
+        """
         return self.__routing_table
 
 
     def print_routing_table(self):
         """
-        # Done: Scott
         Print the current self.__routing_table
         """
         print(routing_table_formatter(self.__router_id,
@@ -155,9 +201,9 @@ class Router:
         self.__routing_table[self.__router_id] = self_route
 
 
-    #------------------------------------------------------
-    # Init part above
-    #------------------------------------------------------
+#------------------------------------------------------
+# Above is the init implementation
+#------------------------------------------------------
 
 
     def advertise_all_routes_periodically(self):
@@ -191,8 +237,6 @@ class Router:
 
     def advertise_routes(self, mode):
         """
-        # TODO: Meng
-
         parameter:
         mode: a string 'all' / 'update'
         get the latest advertising rip packet from
@@ -229,7 +273,6 @@ class Router:
 
     def update_packet(self, receiver_id, mode):
         """
-        # Done: Meng
         parameter:
         receiver_port
 
@@ -255,9 +298,10 @@ class Router:
         packet_bytes = packet.packet_bytes()
         return packet_bytes
 
-    #----------------------------------------
-    # Above is sending part
-    #----------------------------------------
+
+#----------------------------------------
+# Above is sender implementation
+#----------------------------------------
 
 
     def receive_routes(self):
@@ -276,7 +320,6 @@ class Router:
 
     def process_received_packet(self, raw_packet):
         """
-        # TODO: Meng
         Process the received packet and call update_routing_table()
         if necessary
 
@@ -299,7 +342,6 @@ class Router:
 
     def update_routing_table(self, rip_packet):
         """
-        # TODO: Meng
         check all the entries in rip_packet object, and update current
         routing table if necessary
 
@@ -342,7 +384,6 @@ class Router:
         entry: a RipEntry object
         sender_id: the router id from which the entry is sent
         """
-        # TODO: triggered update by Meng
         # if route to dest is available in __routing_table
 
         # 1. if packet is from the same router as
@@ -400,9 +441,9 @@ class Router:
             self.__routing_table[entry.dest].timeout = time.time()
 
 
-    #----------------------------------------
-    # Above is receiving part
-    #----------------------------------------
+#----------------------------------------
+# Above is receiver implementation
+#----------------------------------------
 
     def check_timeout_entries_periodically(self):
         """
@@ -446,9 +487,9 @@ class Router:
             self.print_routing_table()
 
 
-    #----------------------------------------
-    # Above is timeout and garbage_collection part
-    #----------------------------------------
+#-------------------------------------------------------
+# Above is timeout and garbage_collection implementation
+#-------------------------------------------------------
 
     def __str__(self):
         return ("Router: {0}\n"
@@ -474,3 +515,4 @@ if __name__ == '__main__':
     print(new_router)
     print()
     print(new_router.get_interface())
+    print("rip_router passed all tests")

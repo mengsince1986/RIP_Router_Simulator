@@ -1,0 +1,5 @@
+router-id 7
+input-ports 6070, 6071
+output-ports 6012-8-1, 6042-6-4
+period 3
+timeout 18

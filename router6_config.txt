@@ -1,0 +1,5 @@
+router-id 6
+input-ports 6060, 6061
+output-ports 6051-1-5, 6011-5-1
+period 3
+timeout 18

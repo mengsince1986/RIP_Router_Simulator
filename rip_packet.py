@@ -1,12 +1,12 @@
 """
 COSC364 2022-S1 Assignment: RIP routing
-Authors: MENG ZHANG (71682325)
+Authors: MENG ZHANG (71682325), ZHENG CHAO
 File: rip_packet.py
 """
 
-###############################################################################
-#                                RipPacket Class                              #
-###############################################################################
+#######################################################################
+#                                RipPacket Class                      #
+#######################################################################
 
 class RipPacket:
     """
@@ -57,7 +57,8 @@ class RipPacket:
         sender_id = (raw_packet[2] << 8) + raw_packet[3]
         entries_num = int(len(raw_packet[4:]) / cls.ENTRY_LEN)
         # check header validity
-        if not cls.is_valid_header(command, version, sender_id, entries_num):
+        if not cls.is_valid_header(command, version,
+                                   sender_id, entries_num):
             print("Broken packet:", "invalid header")
             return (False, sender_id)
         # Entries: n * 20 bytes [4:]
@@ -133,9 +134,9 @@ class RipPacket:
                is_valid_entries_num
 
 
-###############################################################################
-#                                RipEntry Class                               #
-###############################################################################
+#######################################################################
+#                                RipEntry Class                       #
+#######################################################################
 
 class RipEntry:
     """
@@ -238,9 +239,9 @@ class RipEntry:
         """
         self.metric += 1
 
-###############################################################################
-#                                     Test                                    #
-###############################################################################
+#######################################################################
+#                                     Test                            #
+#######################################################################
 
 if __name__ == '__main__':
     print("==========RIP packet test=========")

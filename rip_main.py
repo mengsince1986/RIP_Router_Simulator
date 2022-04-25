@@ -4,23 +4,23 @@ Authors: MENG ZHANG (71682325), ZHENG CHAO
 File: rip_main.py
 """
 
-###############################################################################
-#                                Import Modules                               #
-###############################################################################
+#######################################################################
+#                                Import Modules                       #
+#######################################################################
 
 import sys
 import time
 import threading
 from rip_init import rip_router_init
 
-###############################################################################
-#                               Global Variables                              #
-###############################################################################
+#######################################################################
+#                               Global Variables                      #
+#######################################################################
 
 
-###############################################################################
-#                             Program Entry Point                             #
-###############################################################################
+#######################################################################
+#                             Program Entry Point                     #
+#######################################################################
 
 if __name__ == "__main__":
     print("Starts RIP Daemon...")
@@ -36,19 +36,7 @@ if __name__ == "__main__":
     # Initialise router with interface (sockets binding)
     ROUTER = rip_router_init(config_file_name)
 
-    """
-    # Receive from input ports in a new thread
-    receiver_thread = threading.Thread(target=ROUTER.receive_routes)
-    receiver_thread.start()
-    # Advertise to ouput ports in a new thread
-    advertiser_thread = threading.Thread(target=ROUTER.advertise_all_routes_periodically)
-    advertiser_thread.start()
-
-    # Join threads
-    #    receiver_thread.join()
-    #    advertiser_thread.join()
-    """
-    # Immediately advertise itself
+    # Advertise itself
     ROUTER.advertise_routes('all')
     ROUTER.print_routing_table()
     ROUTER.random_offset_period()

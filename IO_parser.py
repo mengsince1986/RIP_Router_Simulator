@@ -21,7 +21,9 @@ def router_config(file_name):
     Return: config_data
     a dictionary with 4 keys of router_id, input_ports, output_ports,
     timers
-    i.e. {'router_id': 2, 'input_ports': [6020, 6021], 'output_ports_metric_id': {6010: {'metric': 1, 'router_id': 1}, 6020: {...}}, 'period': 3, 'timeout': 18}
+    i.e. {'router_id': 2, 'input_ports': [6020, 6021], 
+    'output_ports_metric_id': {6010: {'metric': 1, 'router_id': 1}, 
+                               6020: {...}}, 'period': 3, 'timeout': 18}
     """
     raw_config = read_config(file_name)
     config_data = parse_config(raw_config)
@@ -64,7 +66,9 @@ def parse_config(raw_config):
     Return: config_data
     a dictionary with 4 keys of router_id, input_ports, output_ports,
     timers
-    i.e. {'router_id': 2, 'input_ports': [6020, 6021], 'output_ports_metric_id': {6010: {'metric': 1, 'router_id': 1}, 6020: {...}}, 'period': 3, 'timeout': 18}
+    i.e. {'router_id': 2, 'input_ports': [6020, 6021], 
+          'output_ports_metric_id': {6010: {'metric': 1, 'router_id': 1}, 
+                                     6020: {...}}, 'period': 3, 'timeout': 18}
     """
     try:
         # get router id

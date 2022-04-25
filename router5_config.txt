@@ -1,0 +1,5 @@
+router-id 5
+input-ports 6050, 6051
+output-ports 6041-2-4, 6060-1-6
+period 3
+timeout 18
