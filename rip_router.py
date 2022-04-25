@@ -46,7 +46,7 @@ class Router:
         self.__output_ports = outputs
         self.__advertise_all_timer = time.time()
         self.__advertise_updates_timer = time.time()
-        self.__triggered_updates_period = 1
+        self.__triggered_updates_period = 0.2
         self.__default_period = period
         self.__period = period
         self.__timeout_check_timer = time.time()
