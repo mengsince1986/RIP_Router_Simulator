@@ -1,6 +1,6 @@
 """
 COSC364 2022-S1 Assignment: RIP routing
-Authors: MENG ZHANG (71682325), ZHENG CHAO
+Authors: MENG ZHANG (71682325), ZHENG CHAO (21671773)
 File: IO_formatter.py
 """
 import time
@@ -14,7 +14,6 @@ def routing_table_formatter(router_id, table):
     Return:
     table: a formatted string which contains data of the table
     """
-
     # Get header
     header = table_header_formatter(router_id)
     # Get content
@@ -26,7 +25,6 @@ def talbe_border_formatter(length):
     """
     return two formatted routing table borders
     """
-    # Border Top and Bottom: 72 chars
     border = length * '-'
     double_border = length * '='
     return border, double_border
@@ -37,12 +35,9 @@ def table_header_formatter(router_id):
     return a formatted routing table header
     """
     border, double_border = talbe_border_formatter(72)
-    # Title: 49 chars =  27 chars + 21 + 22 paddding spaces
     title = f'Router {router_id:02} RIP ROUTING TABLE'
     padded_title = '|' + 21 * ' ' + title + 22 * ' ' + '|'
-    # Lables: 49 chars
     labels = "|   Dest   |   Next   |   Metric   |  Timeout  |  Garbage  |   State   |"
-    # Table header
     header = '\n' + double_border + '\n' +\
         padded_title + '\n' +\
         double_border + '\n' +\
@@ -55,7 +50,6 @@ def table_content_formatter(table):
     """
     retrun formatted routing table content
     """
-    # Border
     border = talbe_border_formatter(72)[0]
     content = ""
     for dest, rip_route in table.items():

@@ -1,6 +1,6 @@
 """
 COSC364 2022-S1 Assignment: RIP routing
-Authors: MENG ZHANG (71682325), ZHENG CHAO
+Authors: MENG ZHANG (71682325), ZHENG CHAO (21671773)
 File: IO_parser.py
 """
 
@@ -21,8 +21,8 @@ def router_config(file_name):
     Return: config_data
     a dictionary with 4 keys of router_id, input_ports, output_ports,
     timers
-    i.e. {'router_id': 2, 'input_ports': [6020, 6021], 
-    'output_ports_metric_id': {6010: {'metric': 1, 'router_id': 1}, 
+    i.e. {'router_id': 2, 'input_ports': [6020, 6021],
+    'output_ports_metric_id': {6010: {'metric': 1, 'router_id': 1},
                                6020: {...}}, 'period': 3, 'timeout': 18}
     """
     raw_config = read_config(file_name)
@@ -66,8 +66,8 @@ def parse_config(raw_config):
     Return: config_data
     a dictionary with 4 keys of router_id, input_ports, output_ports,
     timers
-    i.e. {'router_id': 2, 'input_ports': [6020, 6021], 
-          'output_ports_metric_id': {6010: {'metric': 1, 'router_id': 1}, 
+    i.e. {'router_id': 2, 'input_ports': [6020, 6021],
+          'output_ports_metric_id': {6010: {'metric': 1, 'router_id': 1},
                                      6020: {...}}, 'period': 3, 'timeout': 18}
     """
     try:
@@ -279,31 +279,42 @@ if __name__ == '__main__':
     print("==========IO_parser Test==========")
     assert parse_id('router-id 2') == 2, "parse_id failed the test"
     print("parse_id passed the test")
-    assert parse_input_ports('input-ports 6020, 6021') == [6020, 6021], "parse_input_ports failed the test"
+    assert parse_input_ports('input-ports 6020, 6021') == \
+        [6020, 6021], "parse_input_ports failed the test"
     print("parse_input_ports passed the test")
-    assert parse_output_ports('output-ports 6010-1-1, 6030-2-3') == ([6010, 6030], {6010: {'metric': 1, 'router_id': 1}, 6030: {'metric': 2, 'router_id': 3}}),"parse_ouput_ports failed the test"
+    assert parse_output_ports('output-ports 6010-1-1, 6030-2-3') == \
+        ([6010, 6030], {6010: {'metric': 1, 'router_id': 1},\
+                        6030: {'metric': 2, 'router_id': 3}}),\
+                        "parse_ouput_ports failed the test"
     print("parse_output_ports passed the test")
     assert parse_period('period 3') == 3, "parse_period failed the test"
     print("parse_period passed the test")
-    assert parse_timeout('timeout 18') == 18, "parse_timeout failed the test"
+    assert parse_timeout('timeout 18') == 18, \
+        "parse_timeout failed the test"
     print("parse_timeout passed the test")
-    assert contains_duplicates([6000, 6001, 6000]), "contains_duplicates failed the test"
+    assert contains_duplicates([6000, 6001, 6000]), \
+        "contains_duplicates failed the test"
     print("contains_duplicates passed test")
-    assert duplicate_lists([6000, 6001, 6000], [6002, 6001, 6003]), "duplicate_lists failed the test"
+    assert duplicate_lists([6000, 6001, 6000], [6002, 6001, 6003]),\
+        "duplicate_lists failed the test"
     print("duplicate_lists passed test")
-    assert is_valid_timer_ratio(3, 18), "is_valid_timer_ratio failed the test"
+    assert is_valid_timer_ratio(3, 18), \
+        "is_valid_timer_ratio failed the test"
     print("is_valid_timer_ratio passed the test")
     print()
 
-    assert read_config("router2_config.txt") == ['router-id 2', 'input-ports 6020, 6021', 'output-ports 6010-1-1, 6030-2-3', 'period 3', 'timeout 18'], "read_config failed the test"
+    assert read_config("router2_config.txt") == \
+        ['router-id 2', 'input-ports 6020, 6021', \
+         'output-ports 6010-1-1, 6030-2-3', 'period 3', 'timeout 18'],\
+         "read_config failed the test"
     print("read_config passed the test")
     raw_config = read_config("router2_config.txt")
-    #    config_data = parse_config(['router-id 2', 'input-ports 6020, 6021', 'output-ports 6010-1-1, 6030-2-3', 'period 3', 'timeout 18'])
     config_data = parse_config(raw_config)
-    #    print(config_data)
     assert config_data['router_id'] == 2
     assert config_data['input_ports'] == [6020, 6021]
-    assert config_data['output_ports_metric_id'] == {6010: {'metric': 1, 'router_id': 1}, 6030: {'metric': 2, 'router_id': 3}}
+    assert config_data['output_ports_metric_id'] == \
+        {6010: {'metric': 1, 'router_id': 1},\
+         6030: {'metric': 2, 'router_id': 3}}
     assert config_data['period'] == 3
     assert config_data['timeout'] == 18
     print("parse_config passed the test")
@@ -312,7 +323,9 @@ if __name__ == '__main__':
     config_data = router_config("router2_config.txt")
     assert config_data['router_id'] == 2
     assert config_data['input_ports'] == [6020, 6021]
-    assert config_data['output_ports_metric_id'] == {6010: {'metric': 1, 'router_id': 1}, 6030: {'metric': 2, 'router_id': 3}}
+    assert config_data['output_ports_metric_id'] == \
+        {6010: {'metric': 1, 'router_id': 1}, \
+         6030: {'metric': 2, 'router_id': 3}}
     assert config_data['period'] == 3
     assert config_data['timeout'] == 18
     print("config_data passed the test")

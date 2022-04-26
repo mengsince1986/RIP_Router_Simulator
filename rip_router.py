@@ -1,12 +1,10 @@
 """
 COSC364 2022-S1 Assignment: RIP routing
-Authors: MENG ZHANG (71682325), ZHENG CHAO
+Authors: MENG ZHANG (71682325), ZHENG CHAO (21671773)
 File: rip_router.py
 """
 
-#######################################################################
-#                                Import Modules                       #
-#######################################################################
+# Import Modules
 import time
 import random
 from datetime import datetime
@@ -14,13 +12,12 @@ from network_interface import Interface
 from forwarding_route import Route
 from rip_packet import RipPacket, RipEntry
 from IO_formatter import routing_table_formatter
-#######################################################################
-#                                 Router Class                        #
-#######################################################################
 
+
+# Router Class
 class Router:
     """
-    Create a new router object
+    An object that simulates a router with rip protocol
     """
 
     # Class attributes
@@ -34,12 +31,16 @@ class Router:
         the __* attributes are private attributes which can only be
         accessed by getter outside of class.
 
-        inputs: [5001, 5002, 5003]
-        outputs format: [[6010(port), 2(metric), 3(router_id)], [...], ...]
-        output ports format: {6010(port): {'metric': 1, 'router_id': 1},
-                              6030(port): {'metric': 2, 'router_id': 3},
-                              ... : {...}
-                             }
+        Parameters:
+        router_id: an integer, i.e. 1, 2, 3, etc
+        inputs: a list of integers, i.e. [5001, 5002, 5003]
+        outputs: a dictionary of dictionaries, i.e.
+        {6010(port): {'metric': 1, 'router_id': 1},
+         6030(port): {'metric': 2, 'router_id': 3},
+               ... : {...}
+        }
+        period: an integer
+        timout: an integer
         """
         # Instance attributes
         self.__router_id = router_id
@@ -161,7 +162,8 @@ class Router:
         randomize self.__period +- TIMER_OFFSET
         """
         self.__period = self.__default_period +\
-            random.uniform(-self.REGULAR_TIMER_OFFSET, +self.REGULAR_TIMER_OFFSET)
+            random.uniform(-self.REGULAR_TIMER_OFFSET, \
+                           +self.REGULAR_TIMER_OFFSET)
         print("Set Router regular update period to " + \
               f"{self.__period:.2f}")
 
@@ -502,7 +504,7 @@ class Router:
                                        self.__period,
                                        self.__timeout)
 
-
+# Module tests
 if __name__ == '__main__':
     new_router = Router(0, [5001], [[5002, 10, 2]], 3, 18)
     print("Router ID: {0}".format(new_router.get_router_id()))

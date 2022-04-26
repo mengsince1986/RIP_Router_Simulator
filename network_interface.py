@@ -1,22 +1,20 @@
 """
 COSC364 2022-S1 Assignment: RIP routing
-Authors: MENG ZHANG (71682325), ZHENG CHAO
+Authors: MENG ZHANG (71682325), ZHENG CHAO (21671773)
 File: router_interface.py
 """
-#######################################################################
-#                                Import Modules                       #
-#######################################################################
+
+# Import Modules
 import socket
 import select
-#######################################################################
-#                               RouterInterface Class                 #
-#######################################################################
 
+
+# Router Network Interface Class
 class Interface:
     """
-    Create a new router socket object which includes:
-    * Multiple sockets with corresponding ports as instance attribute
-    * A series of methods for socket operation:
+    A router interface object which includes:
+    * Multiple sockets with corresponding ports as instance attributes
+    * A series of methods for socket operations:
     - send(port),
     - receive(port)
     """
@@ -70,7 +68,8 @@ class Interface:
         sockets = []
         for input_socket in self.ports_sockets.values():
             sockets.append(input_socket)
-        sockets_to_read = (select.select(sockets, [], [], self.select_timeout))[0]
+        sockets_to_read = (select.select(sockets, [], [], \
+                                         self.select_timeout))[0]
         data_list = []
         for socket_to_read in sockets_to_read:
             # get the receiving port number which the socket binds
@@ -112,7 +111,9 @@ if __name__ == "__main__":
     sender = Interface([6010, 6011, 6012])
     receiver = Interface([6020, 6021, 6022])
     sender.send(b'hello, world', 6021)
-    assert receiver.receive()[0] == b"hello, world", "send/receive failed test"
+    assert receiver.receive()[0] == \
+        b"hello, world", "send/receive failed test"
     sender.send(b'hello, again', 6020)
-    assert receiver.receive()[0] == b"hello, again", "send/receive failed test"
+    assert receiver.receive()[0] == \
+        b"hello, again", "send/receive failed test"
     print("send/receive passed test")

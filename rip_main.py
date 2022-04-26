@@ -1,27 +1,18 @@
 """
 COSC364 2022-S1 Assignment: RIP routing
-Authors: MENG ZHANG (71682325), ZHENG CHAO
+Authors: MENG ZHANG (71682325), ZHENG CHAO (21671773)
 File: rip_main.py
 """
 
-#######################################################################
-#                                Import Modules                       #
-#######################################################################
 
+# Import Modules
 import sys
 import time
 import threading
 from rip_init import rip_router_init
 
-#######################################################################
-#                               Global Variables                      #
-#######################################################################
 
-
-#######################################################################
-#                             Program Entry Point                     #
-#######################################################################
-
+# Program Entry Point
 if __name__ == "__main__":
     print("Starts RIP Daemon...")
     # get config file name
@@ -33,10 +24,10 @@ if __name__ == "__main__":
     except ValueError as error:
         print(error)
 
-    # Initialise router with interface (sockets binding)
+    # Initialise a new Router object
     ROUTER = rip_router_init(config_file_name)
 
-    # Advertise itself
+    # First advertise ROUTER itself immediately
     ROUTER.advertise_routes('all')
     ROUTER.print_routing_table()
     ROUTER.random_offset_period()

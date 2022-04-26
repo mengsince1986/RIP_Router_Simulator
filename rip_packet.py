@@ -1,32 +1,30 @@
 """
 COSC364 2022-S1 Assignment: RIP routing
-Authors: MENG ZHANG (71682325), ZHENG CHAO
+Authors: MENG ZHANG (71682325), ZHENG CHAO (21671773)
 File: rip_packet.py
 """
-
-#######################################################################
-#                                RipPacket Class                      #
-#######################################################################
-
+# RipPacket Class
 class RipPacket:
     """
-    A RipPacket class for creating RIP update packet
+    A class for creating RIP update packet and provide methods to
+    encode/decode outputing/incoming packets
     """
-    # RipPacket class attributes
-    # RIP length in bytes
+    # class attributes
     HEADER_LEN = 4
     ENTRY_LEN = 20
 
 
     def __init__(self, entries, router_id, command=2, version=2):
         """
-        rip_entries: a list of rip entry objects
+        Parameters:
+        entries: a list of rip entry objects
         router_id: the sender ID,  an integer between 1 and 64000
         (use the 16-bit wide all-zero field)
-        command: 'response'(default) or 'request'
-        version: 1 or 2(default)
+        command: an integer,
+        i.e. 2 represents 'response'; 1 represents 'request'
+        version: an integer, i.e. 1, 2(default)
         """
-        # RipPacket instance attributes
+        # instance attributes
         self.command = command
         self.version = version
         self.router_id = router_id
@@ -134,21 +132,21 @@ class RipPacket:
                is_valid_entries_num
 
 
-#######################################################################
-#                                RipEntry Class                       #
-#######################################################################
-
+# RipEntry Class
 class RipEntry:
     """
-    A RipEntry class for creating RipPacket
+    A class for creating entry objects in a rip packet
     """
+
+    # class attributes
     PADDING_2BYTES = (0).to_bytes(2, byteorder='big')
     PADDING_4BYTES = (0).to_bytes(4, byteorder='big')
-    # RipEntry instance attributes
+
+
     def __init__(self, dest, metric, afi=2):
         """
         Parameters:
-        dest: router_id of destination
+        dest: an integer, router_id of destination
         metric: an integer between 1 and 16 (inclusive)
         AFI: Address FAmily Identifier
         """
@@ -239,10 +237,8 @@ class RipEntry:
         """
         self.metric += 1
 
-#######################################################################
-#                                     Test                            #
-#######################################################################
 
+# Tests
 if __name__ == '__main__':
     print("==========RIP packet test=========")
     # dest = router1, metric = 1
@@ -256,7 +252,8 @@ if __name__ == '__main__':
     entry2_bytes = entry2.entry_bytes()
     #    print(entry2_bytes)
     assert len(entry2_bytes) == 20, "Wrong RipEntry byte length"
-    assert entry2_bytes[0] == 0 and entry2_bytes[1] == 2, "Wrong RipEntry afi bytes"
+    assert entry2_bytes[0] == 0 and \
+        entry2_bytes[1] == 2, "Wrong RipEntry afi bytes"
     assert entry2_bytes[7] == 3, "Wrong RipEntry dest bytes"
     entry2_decode = RipEntry.decode_enty(entry2_bytes)
     assert entry2_decode.afi == 2, "Wrong RipEntry afi"
@@ -267,16 +264,25 @@ if __name__ == '__main__':
     entries_lst = [entry1, entry2]
 
     test_rip_packet = RipPacket(entries_lst, 2)
-    assert test_rip_packet.command == 2, "Wrong RipPacket command value"
-    assert test_rip_packet.version == 2, "Wrong RipPacket version value"
+    assert test_rip_packet.command == 2,\
+        "Wrong RipPacket command value"
+    assert test_rip_packet.version == 2,\
+        "Wrong RipPacket version value"
     assert test_rip_packet.router_id == 2, "Wrong RipPacket router ID"
-    assert len(test_rip_packet.header_bytes()) == 4, "Invalid header length"
-    assert len(test_rip_packet.entries_bytes()) % 20 == 0, "Invalid entries length"
+    assert len(test_rip_packet.header_bytes()) == 4,\
+        "Invalid header length"
+    assert len(test_rip_packet.entries_bytes()) % 20 == 0,\
+        "Invalid entries length"
     test_rip_packet_bytes = test_rip_packet.packet_bytes()
-    is_valid, test_rip_packet_decode = RipPacket.decode_packet(test_rip_packet_bytes)
-    assert test_rip_packet_decode.command == 2, "Invalid RipPacket decode command"
-    assert test_rip_packet_decode.version == 2, "Invalid RipPacket decode version"
-    assert test_rip_packet_decode.router_id == 2, "Invalid RipPacket decode router_id"
+    is_valid, test_rip_packet_decode = \
+        RipPacket.decode_packet(test_rip_packet_bytes)
+    assert test_rip_packet_decode.command == 2,\
+        "Invalid RipPacket decode command"
+    assert test_rip_packet_decode.version == 2,\
+        "Invalid RipPacket decode version"
+    assert test_rip_packet_decode.router_id == 2,\
+        "Invalid RipPacket decode router_id"
     assert test_rip_packet_decode.entries[0].metric == entry1.metric and\
-        test_rip_packet_decode.entries[0].dest == entry1.dest, "Invalid RipPacket decode entry"
+        test_rip_packet_decode.entries[0].dest == entry1.dest, \
+        "Invalid RipPacket decode entry"
     print("passed RipPacket Class tests")

@@ -1,28 +1,24 @@
 """
 COSC364 2022-S1 Assignment: RIP routing
-Authors: MENG ZHANG (71682325), ZHENG CHAO
+Authors: MENG ZHANG (71682325), ZHENG CHAO (21671773)
 File: rip_init.py
 """
 
-#######################################################################
-#                                Import Modules                       #
-#######################################################################
+
+# Import Modules
 from IO_parser import router_config
 from rip_router import Router
 
-#######################################################################
-#                                Init Functions                       #
-#######################################################################
 
+# Initialise router
 def rip_router_init(config_file_name):
     """
     Parameter:
-    config: a dictionary contains the key/values to initialise a new
+    config_file_name: the name of the config file to initialise a new
     router object.
 
-    Return: a new router object newRouter
+    Return: a new Router object
     """
-    # Initialise a new router object
     config = router_config(config_file_name)
     router = Router(config['router_id'],
                         config['input_ports'],
