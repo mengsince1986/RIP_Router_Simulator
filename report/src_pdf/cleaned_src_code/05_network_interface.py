@@ -100,21 +100,3 @@ class Interface:
                 "Ports_Sockets: {2}").format(self.host,
                                              self.ports,
                                              self.ports_sockets)
-
-# Module tests
-if __name__ == "__main__":
-    print("==========Test network_interface==========")
-
-    newInterface = Interface([6001, 6002, 6003])
-    assert newInterface.ports == [6001, 6002, 6003]
-    print("Interface __init__ passed the test")
-
-    sender = Interface([6010, 6011, 6012])
-    receiver = Interface([6020, 6021, 6022])
-    sender.send(b'hello, world', 6021)
-    assert receiver.receive()[0] == \
-        b"hello, world", "send/receive failed test"
-    sender.send(b'hello, again', 6020)
-    assert receiver.receive()[0] == \
-        b"hello, again", "send/receive failed test"
-    print("send/receive passed test")
