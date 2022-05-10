@@ -1,0 +1,56 @@
+@startuml cosc364 assignment class diagram
+class Router {
+    __router_id
+    __input_ports
+    __output_ports
+    __period
+    __timeout
+    __garbage_collection_time
+    __interface
+    __routing_table
+    advertise_all_routes_periodically()
+    advertise_updated_routes()
+    receive_routes()
+    update_routing_table()
+    check_timout_entries_periodically()
+    print_routing_talbe()
+}
+class Interface {
+    host
+    ports
+    ports_sockets
+    init_sockets()
+    receive()
+    send()
+}
+class Route {
+    next_hop
+    metric
+    timeout
+    garbage_collect_time
+    state
+}
+class RipPacket {
+    command
+    version
+    router_id
+    entries
+    decode_packet()
+    packet_bytes() 
+}
+class RipEntry {
+    dest
+    metric
+    afi
+    PADDING_2BYTES
+    PADDING_4BYTES
+    decode_enty()
+    entry_bytes()
+}
+
+Interface -* Router : < has
+Router *- RipPacket : sends/receives >
+Router -- Route : owns >
+RipPacket -- RipEntry : includes >  
+
+@enduml
