@@ -58,6 +58,7 @@ class Router:
         self.__garbage_collection_time = period * 4
         self.__interface = None
         self.__routing_table = {}
+        self.__show_more_msgs = False
         # Initialisation
         self.init_interface(inputs)
         self.init_routing_table()
@@ -164,8 +165,9 @@ class Router:
         self.__period = self.__default_period +\
             random.uniform(-self.REGULAR_TIMER_OFFSET, \
                            +self.REGULAR_TIMER_OFFSET)
-        print("Set Router regular update period to " + \
-              f"{self.__period:.2f}")
+        if self.__show_more_msgs:
+            print("Set Router regular update period to " + \
+                  f"{self.__period:.2f}")
 
 
     def random_triggered_updates_period(self):
@@ -175,8 +177,9 @@ class Router:
         self.__triggered_updates_period = \
             self.__default_triggered_updates_period -\
             random.uniform(0, 0.4)
-        print("Set Router triggered update period to " + \
-              f"{self.__triggered_updates_period:.2f}")
+        if self.__show_more_msgs:
+            print("Set Router triggered update period to " + \
+                  f"{self.__triggered_updates_period:.2f}")
 
 
     def init_interface(self, ports):
@@ -262,9 +265,10 @@ class Router:
                     message = "Sends all routes to Router"
                 else:
                     message = 'Sends triggred update to Router'
-                print(message +
-                     f"{metric_id['router_id']} " +
-                     f"[{dest_port}] at {current_time}")
+                if self.__show_more_msgs:
+                    print(message +
+                          f"{metric_id['router_id']} " +
+                          f"[{dest_port}] at {current_time}")
             # clear flags of "update"
             for route in self.__routing_table.values():
                 if mode == 'update' and route.state == 'updated':
@@ -335,7 +339,8 @@ class Router:
         is_valid, rip_packet = RipPacket.decode_packet(raw_packet)
         if is_valid:
             # update routing_table if incoming packet is valid
-            print(f'Received update from Router {rip_packet.router_id}')
+            if self.__show_more_msgs:
+                print(f'Received update from Router {rip_packet.router_id}')
             self.update_routing_table(rip_packet)
         else:
             # drop the packet if incoming packet is invalid
@@ -464,7 +469,8 @@ class Router:
         if an entry is timeout, start its garbage_collect_time
         """
         current_time = datetime.now().strftime('%H:%M:%S.%f')[:-4]
-        print(f"Checking timeout entries at {current_time}")
+        if self.__show_more_msgs:
+            print(f"Checking timeout entries at {current_time}")
 
         entries_to_remove = []
         for dest_id, entry in self.__routing_table.items():
