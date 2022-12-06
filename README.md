@@ -5,11 +5,21 @@ The program implements a "[RIP](https://en.wikipedia.org/wiki/Routing_Informatio
 
 ## How to start a router?
 
-Run `rip_main.py` (in folder *src*) with router config file as argument. There are 7 router configuration files for demostration in folder *router_configs*. For example:
+Run `rip_main.py` (in folder *src*) with router config as argument. There are 7 router configuration files for demostration in folder *router_configs*. For example:
 
 ```bash
 python rip_main.py ../router_configs/router1_config.txt
 ```
+
+Start one router with router1_confg.txt:
+
+<img src="./screenshots/one_router.png">
+
+Start all 7 default routers:
+
+<img src="./screenshots/seven_routers.png">
+
+
 ## How to create a new router configuration file?
 
 There are 5 parameters to be specified for each configuration file.
